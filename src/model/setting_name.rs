@@ -1,12 +1,12 @@
+use crate::lexer::{Parsable, ParserOutput};
 use nom::{
     branch::alt, bytes::complete::tag, character::complete::alpha1, combinator::recognize,
     multi::many0_count,
 };
-
-use crate::lexer::{Parsable, ParserOutput};
 use std::fmt::Display;
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
+/// Represents the name of a setting; in other words, the part that comes before the '=' sign.
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Hash)]
 pub struct SettingName<'a>(&'a str);
 
 impl<'a> Display for SettingName<'a> {

@@ -3,10 +3,11 @@ use crate::lexer::{Parsable, ParserOutput};
 use nom::multi::many0;
 use std::fmt::Display;
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default)]
+/// Represents an entire section, including the section type, the profile name, and all of the settings
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default, Hash)]
 pub struct Section<'a> {
-    header: Header<'a>,
-    entries: Vec<Entry<'a>>,
+    pub header: Header<'a>,
+    pub entries: Vec<Entry<'a>>,
 }
 
 impl<'a> Display for Section<'a> {

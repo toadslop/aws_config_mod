@@ -2,7 +2,8 @@ use crate::lexer::{Parsable, ParserOutput};
 use nom::bytes::complete::take_till;
 use std::{fmt::Display, ops::Deref};
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
+/// Represents the value of a setting. In other words, whatever follows the = sign in a configuration setting.
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Hash)]
 pub struct Value<'a>(&'a str);
 
 impl<'a> Deref for Value<'a> {

@@ -5,7 +5,7 @@ use std::{fmt::Display, ops::Deref};
 /// Represents an equal sign and it's surrounding whitespace.
 /// This is an internal type used mainly to help return a file to its original state,
 /// even preserving unusual space.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Equal<'a>(&'a str);
 
 impl<'a> Display for Equal<'a> {

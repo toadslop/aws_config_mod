@@ -3,12 +3,13 @@ use crate::lexer::{Parsable, ParserOutput};
 use nom::multi::many0;
 use std::fmt::Display;
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
+/// Represents a setting that has nested sub-settings.
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Hash)]
 pub struct SubsectionSetting<'a> {
-    setting_name: SettingName<'a>,
+    pub setting_name: SettingName<'a>,
     equal: Equal<'a>,
-    whitespace: Whitespace<'a>,
-    sub_settings: Vec<Setting<'a>>,
+    pub whitespace: Whitespace<'a>,
+    pub sub_settings: Vec<Setting<'a>>,
 }
 
 impl<'a> Display for SubsectionSetting<'a> {

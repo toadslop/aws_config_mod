@@ -4,7 +4,7 @@ use nom::{combinator::eof, error::VerboseError, multi::many_till, IResult};
 use std::fmt::Display;
 
 /// Represents a complete aws config file
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Hash, Default)]
 pub struct ConfigFile<'a> {
     /// Represents the content of the file. The content includes the sections of the config
     /// as well as full-line whitespace, which includes comments

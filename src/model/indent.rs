@@ -2,7 +2,7 @@ use crate::lexer::{Parsable, ParserOutput};
 use nom::character::complete::multispace0;
 use std::{fmt::Display, ops::Deref};
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Hash, Default)]
 pub struct Indent<'a>(&'a str);
 
 impl<'a> Display for Indent<'a> {

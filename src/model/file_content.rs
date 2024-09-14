@@ -4,7 +4,7 @@ use crate::lexer::{Parsable, ParserOutput};
 
 use super::{section::Section, whitespace::Whitespace};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum FileContent<'a> {
     Comment(Whitespace<'a>),
     Section(Section<'a>),

@@ -1,20 +1,17 @@
-use std::fmt::Display;
-
+use super::{heading_name::HeadingName, section_type::SectionType, whitespace::Whitespace};
+use crate::lexer::{Parsable, ParserOutput};
 use nom::{
     branch::alt,
     bytes::complete::tag,
     combinator::map,
     sequence::{delimited, separated_pair},
 };
+use std::fmt::Display;
 
-use crate::lexer::{Parsable, ParserOutput};
-
-use super::{profile_name::ProfileName, section_type::SectionType, whitespace::Whitespace};
-
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default, Hash)]
 pub struct Header<'a> {
-    profile: Option<ProfileName<'a>>,
-    section_type: SectionType,
+    profile: Option<HeadingName<'a>>,
+    section_type: SectionType<'a>,
     comment: Whitespace<'a>,
 }
 
@@ -36,7 +33,7 @@ impl<'a> Parsable<'a> for Header<'a> {
             tag("["),
             alt((
                 map(
-                    separated_pair(SectionType::parse, tag(" "), ProfileName::parse),
+                    separated_pair(SectionType::parse, tag(" "), HeadingName::parse),
                     |(section_type, profile_name)| (Some(profile_name), section_type),
                 ),
                 map(SectionType::parse, |section_type| (None, section_type)),

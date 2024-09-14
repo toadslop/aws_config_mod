@@ -4,13 +4,14 @@ use super::{
 use crate::lexer::{Parsable, ParserOutput};
 use std::fmt::Display;
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+/// Represents a setting in its entirety, including indentation, its name and value, and a comment
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Setting<'a> {
     pub setting_name: SettingName<'a>,
     pub value: Value<'a>,
     equal: Equal<'a>,
-    leading_spaces: Indent<'a>,
-    whitespace: Whitespace<'a>,
+    pub leading_spaces: Indent<'a>,
+    pub whitespace: Whitespace<'a>,
 }
 
 impl<'a> Display for Setting<'a> {

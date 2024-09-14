@@ -4,7 +4,7 @@ use std::fmt::Display;
 
 /// Represents an entry in a config section. It could be a single-line setting
 /// or a setting with subsections
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Entry<'a> {
     /// A single-line setting
     Single(Setting<'a>),

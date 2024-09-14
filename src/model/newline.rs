@@ -4,7 +4,7 @@ use nom::{branch::alt, bytes::complete::tag, character::complete::crlf};
 
 use crate::lexer::{Parsable, ParserOutput};
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default)]
 pub struct Newline<'a>(&'a str);
 
 impl<'a> Display for Newline<'a> {
