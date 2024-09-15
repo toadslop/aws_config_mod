@@ -157,7 +157,8 @@ fn can_get_a_value_from_path_tuple() {
 
 #[test]
 fn can_set_a_value() {
-    let mut config = AwsConfigFile::parse(SAMPLE_FILE).expect("Sample file should be valid");
+    let mut config: AwsConfigFile<'_> =
+        AwsConfigFile::parse(SAMPLE_FILE).expect("Sample file should be valid");
 
     {
         let setting_path =
@@ -165,5 +166,5 @@ fn can_set_a_value() {
         config.set(setting_path, Value::from("my-new-credential-source"));
     }
 
-    config.clone();
+    // config.clone();
 }

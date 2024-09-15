@@ -82,7 +82,7 @@ impl<'a> AwsConfigFile<'a> {
         section.get_nested_setting(setting_name, nested_setting_name)
     }
 
-    pub fn set(&'a mut self, setting_path: SettingPath<'a>, value: Value<'a>) {
+    pub fn set<'b: 'a>(&'a mut self, setting_path: SettingPath<'b>, value: Value<'b>) {
         let section = match self.0.get_section_mut(
             &setting_path.section_path.section_type,
             setting_path.section_path.section_name.as_ref(),
