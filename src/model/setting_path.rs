@@ -1,19 +1,14 @@
-use std::{borrow::Cow, fmt::Display};
-
 use super::{section_path::ConfigPathError, SectionPath, SettingName};
 use crate::{lexer::Parsable, util::to_owned_input};
 use nom::{bytes::complete::tag, combinator::eof};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SettingPath<'a, T>
-where
-    T: Display,
-{
+pub struct SettingPath<'a> {
     pub(crate) section_path: SectionPath<'a>,
-    pub(crate) setting_name: SettingName<T>,
+    pub(crate) setting_name: SettingName<'a>,
 }
 
-impl<'a> TryFrom<&'a str> for SettingPath<'a, Cow<'a, str>> {
+impl<'a> TryFrom<&'a str> for SettingPath<'a> {
     type Error = ConfigPathError;
 
     fn try_from(value: &'a str) -> Result<Self, Self::Error> {
@@ -23,7 +18,7 @@ impl<'a> TryFrom<&'a str> for SettingPath<'a, Cow<'a, str>> {
     }
 }
 
-impl<'a> TryFrom<(&'a str, &'a str, &'a str)> for SettingPath<'a, Cow<'a, str>> {
+impl<'a> TryFrom<(&'a str, &'a str, &'a str)> for SettingPath<'a> {
     type Error = ConfigPathError;
 
     fn try_from(
@@ -39,7 +34,7 @@ impl<'a> TryFrom<(&'a str, &'a str, &'a str)> for SettingPath<'a, Cow<'a, str>> 
     }
 }
 
-impl<'a> Parsable<'a> for SettingPath<'a, Cow<'a, str>> {
+impl<'a> Parsable<'a> for SettingPath<'a> {
     type Output = Self;
 
     fn parse(input: &'a str) -> crate::lexer::ParserOutput<'a, Self::Output> {
@@ -60,8 +55,8 @@ impl<'a> Parsable<'a> for SettingPath<'a, Cow<'a, str>> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NestedSettingPath<'a> {
     pub(crate) section_path: SectionPath<'a>,
-    pub(crate) setting_name: SettingName<Cow<'a, str>>,
-    pub(crate) nested_setting_name: SettingName<Cow<'a, str>>,
+    pub(crate) setting_name: SettingName<'a>,
+    pub(crate) nested_setting_name: SettingName<'a>,
 }
 
 impl<'a> TryFrom<&'a str> for NestedSettingPath<'a> {

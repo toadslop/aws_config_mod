@@ -7,43 +7,35 @@ use std::{borrow::Cow, fmt::Display, ops::Deref};
 
 /// Represents the name of a setting; in other words, the part that comes before the '=' sign.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone)]
-pub struct SettingName<T>(pub(crate) T)
-where
-    T: Display;
+pub struct SettingName<'a>(Cow<'a, str>);
 
-impl PartialEq<str> for SettingName<Cow<'_, str>> {
+impl<'a> PartialEq<str> for SettingName<'a> {
     fn eq(&self, other: &str) -> bool {
         self.0 == other
     }
 }
 
-impl PartialEq<SettingName<Cow<'_, str>>> for str {
-    fn eq(&self, other: &SettingName<Cow<'_, str>>) -> bool {
+impl<'a> PartialEq<SettingName<'a>> for str {
+    fn eq(&self, other: &SettingName<'a>) -> bool {
         self == other.0
     }
 }
 
-impl<T> Display for SettingName<T>
-where
-    T: Display,
-{
+impl<'a> Display for SettingName<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }
 }
 
-impl<T> Deref for SettingName<T>
-where
-    T: Display,
-{
-    type Target = T;
+impl<'a> Deref for SettingName<'a> {
+    type Target = Cow<'a, str>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl<'a> Parsable<'a> for SettingName<Cow<'a, str>> {
+impl<'a> Parsable<'a> for SettingName<'a> {
     type Output = Self;
 
     fn parse(input: &'a str) -> ParserOutput<'a, Self::Output> {

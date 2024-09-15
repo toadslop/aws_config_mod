@@ -7,14 +7,14 @@ use std::fmt::Display;
 
 /// Represents a complete aws config file
 #[derive(Debug, PartialEq, Eq, Clone, Hash, Default)]
-pub struct ConfigFile<'a, 'b> {
+pub struct ConfigFile<'a> {
     /// Represents the content of the file. The content includes the sections of the config
     /// as well as full-line whitespace, which includes comments
     pub(crate) content: Vec<FileContent<'a>>,
-    pub(crate) new_content: Vec<FileContent<'b>>,
+    pub(crate) new_content: Vec<FileContent<'a>>,
 }
 
-impl<'a, 'b> ConfigFile<'a, 'b> {
+impl<'a> ConfigFile<'a> {
     pub(crate) fn get_section(
         &self,
         section_type: &SectionType,
@@ -53,7 +53,7 @@ impl<'a, 'b> ConfigFile<'a, 'b> {
         })
     }
 
-    pub(crate) fn add_section(&mut self, section_path: SectionPath<'b>) -> &'a mut Section {
+    pub(crate) fn add_section(&mut self, section_path: SectionPath<'a>) -> &'a mut Section {
         let new_section: Section = Section::new(Header::from(section_path.clone()));
         self.new_content.push(FileContent::Section(new_section));
 
@@ -65,7 +65,7 @@ impl<'a, 'b> ConfigFile<'a, 'b> {
     }
 }
 
-impl<'a, 'b> Display for ConfigFile<'a, 'b> {
+impl<'a> Display for ConfigFile<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -78,7 +78,7 @@ impl<'a, 'b> Display for ConfigFile<'a, 'b> {
     }
 }
 
-impl<'a, 'b> Parsable<'a> for ConfigFile<'a, 'b> {
+impl<'a> Parsable<'a> for ConfigFile<'a> {
     type Output = Self;
 
     fn parse(input: &'a str) -> IResult<&'a str, Self::Output, VerboseError<&'a str>> {

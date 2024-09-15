@@ -1,25 +1,21 @@
 use super::{equal::Equal, indent::Indent, setting_name::SettingName, value_type::ValueType};
 use crate::lexer::{Parsable, ParserOutput};
 use std::{
-    borrow::Cow,
     fmt::{Debug, Display},
     hash::Hash,
 };
 
 /// Represents a setting in its entirety, including indentation, its name and value, and a comment
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Setting<'a, T>
-where
-    T: Debug + Clone + PartialEq + Eq + PartialOrd + Ord + Hash + Display,
-{
-    pub(crate) setting_name: SettingName<T>,
+pub struct Setting<'a> {
+    pub(crate) setting_name: SettingName<'a>,
     pub(crate) value: ValueType<'a>,
     pub(crate) equal: Equal<'a>,
     pub(crate) leading_spaces: Indent<'a>,
 }
 
-impl<'a> Setting<'a, String> {
-    pub fn new(setting_name: SettingName<String>, value: ValueType<'a>) -> Self {
+impl<'a> Setting<'a> {
+    pub fn new(setting_name: SettingName<'a>, value: ValueType<'a>) -> Self {
         Self {
             setting_name,
             value,
@@ -27,13 +23,7 @@ impl<'a> Setting<'a, String> {
             leading_spaces: Indent::default(),
         }
     }
-}
-
-impl<'a, T> Setting<'a, T>
-where
-    T: Debug + Clone + PartialEq + Eq + PartialOrd + Ord + Hash + Display,
-{
-    pub fn name(&self) -> &SettingName<T> {
+    pub fn name(&self) -> &SettingName<'a> {
         &self.setting_name
     }
 
@@ -46,10 +36,7 @@ where
     }
 }
 
-impl<'a, T> Display for Setting<'a, T>
-where
-    T: Display + Debug + Clone + Ord + PartialOrd + Eq + PartialEq + Hash,
-{
+impl<'a> Display for Setting<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -59,7 +46,7 @@ where
     }
 }
 
-impl<'a> Parsable<'a> for Setting<'a, Cow<'a, str>> {
+impl<'a> Parsable<'a> for Setting<'a> {
     type Output = Self;
 
     fn parse(input: &'a str) -> ParserOutput<'a, Self::Output> {
