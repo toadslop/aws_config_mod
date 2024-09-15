@@ -21,7 +21,7 @@ use lexer::Parsable;
 use model::ConfigFile;
 pub use model::{
     NestedSetting, NestedSettingPath, Section, SectionName, SectionPath, SectionType, Setting,
-    SettingName, SettingPath, SubsectionSetting, Value, ValueType,
+    SettingName, SettingPath, Value, ValueType,
 };
 use nom::error::VerboseError;
 use std::fmt::Display;
