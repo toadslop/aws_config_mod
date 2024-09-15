@@ -1,13 +1,31 @@
 use crate::lexer::{Parsable, ParserOutput};
 use nom::{character::complete::none_of, combinator::recognize, multi::many1_count};
-use std::{fmt::Display, ops::Deref};
+use std::{borrow::Cow, fmt::Display, ops::Deref};
 
 /// Represents the value of a setting. In other words, whatever follows the = sign in a configuration setting.
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Hash)]
-pub struct Value<'a>(&'a str);
+#[derive(Debug, PartialOrd, Ord, PartialEq, Eq, Clone, Hash)]
+pub struct Value<'a>(Cow<'a, str>);
+
+impl<'a> PartialEq<str> for Value<'a> {
+    fn eq(&self, other: &str) -> bool {
+        self.0 == other
+    }
+}
+
+impl<'a> PartialEq<Value<'a>> for str {
+    fn eq(&self, other: &Value<'a>) -> bool {
+        self == other.0
+    }
+}
+
+impl<'a> From<&'a str> for Value<'a> {
+    fn from(value: &'a str) -> Self {
+        Self(Cow::Borrowed(value))
+    }
+}
 
 impl<'a> Deref for Value<'a> {
-    type Target = &'a str;
+    type Target = str;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -20,7 +38,7 @@ impl<'a> Parsable<'a> for Value<'a> {
     fn parse(input: &'a str) -> ParserOutput<'a, Self::Output> {
         let (input, val) = recognize(many1_count(none_of("#\n\t \r")))(input)?;
 
-        Ok((input, Value(val)))
+        Ok((input, Value(Cow::Borrowed(val))))
     }
 }
 

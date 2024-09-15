@@ -24,7 +24,7 @@ pub use model::{
     SettingName, SettingPath, Value, ValueType,
 };
 use nom::error::VerboseError;
-use std::fmt::Display;
+use std::{borrow::Cow, fmt::Display};
 
 /// Represents an AWS config file, as opposed to a credentials file.
 ///
@@ -33,9 +33,9 @@ use std::fmt::Display;
 /// - Load the config file automatically, either from an environment variable or from the default location
 /// - Handle more type-specific info
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct AwsConfigFile<'a>(ConfigFile<'a>);
+pub struct AwsConfigFile<'a, 'b>(ConfigFile<'a, 'b>);
 
-impl<'a> AwsConfigFile<'a> {
+impl<'a, 'b: 'a> AwsConfigFile<'a, 'b> {
     /// Given a [str], return it parsed as [AwsConfigFile]
     pub fn parse(s: &'a str) -> Result<Self, nom::Err<VerboseError<&'a str>>> {
         let (_, config_file) = ConfigFile::parse(s)?;
@@ -57,7 +57,7 @@ impl<'a> AwsConfigFile<'a> {
         self.0.get_section(&section_type, section_name.as_ref())
     }
 
-    pub fn get_setting(&self, setting_path: SettingPath) -> Option<&Setting> {
+    pub fn get_setting(&'a self, setting_path: SettingPath<'b>) -> Option<&Setting<Cow<'a, str>>> {
         let SettingPath {
             section_path,
             setting_name,
@@ -68,7 +68,10 @@ impl<'a> AwsConfigFile<'a> {
         section.get_setting(setting_name)
     }
 
-    pub fn get_nested_setting(&self, setting_path: NestedSettingPath) -> Option<&NestedSetting> {
+    pub fn get_nested_setting<'c>(
+        &'c self,
+        setting_path: NestedSettingPath<'c>,
+    ) -> Option<&NestedSetting> {
         let NestedSettingPath {
             section_path,
             setting_name,
@@ -78,9 +81,21 @@ impl<'a> AwsConfigFile<'a> {
         let section = self.get_section(section_path)?;
         section.get_nested_setting(setting_name, nested_setting_name)
     }
+
+    pub fn set(&'a mut self, setting_path: SettingPath<'b>, value: Value<'a>) {
+        let section = match self.0.get_section_mut(
+            &setting_path.section_path.section_type,
+            setting_path.section_path.section_name.as_ref(),
+        ) {
+            Some(section) => section,
+            None => self.0.add_section(setting_path.section_path),
+        };
+
+        section.set(setting_path.setting_name, value);
+    }
 }
 
-impl<'a> Display for AwsConfigFile<'a> {
+impl<'a, 'b> Display for AwsConfigFile<'a, 'b> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }

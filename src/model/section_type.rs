@@ -1,10 +1,10 @@
 use crate::lexer::{Parsable, ParserOutput};
 use nom::{branch::alt, bytes::complete::tag, character::complete::alphanumeric1, combinator::map};
-use std::fmt::Display;
+use std::{borrow::Cow, fmt::Display};
 
 /// Represents the various section types of an AWS config file. If an unknown section type is
 /// encountered, rather than failing it's value is collected under [SectionType::Other]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default, Hash)]
 pub enum SectionType<'a> {
     #[default]
     Default,
@@ -13,7 +13,35 @@ pub enum SectionType<'a> {
     Services,
     Plugins,
     Preview,
-    Other(&'a str),
+    Other(Cow<'a, str>),
+}
+
+impl<'a> PartialEq<str> for SectionType<'a> {
+    fn eq(&self, other: &str) -> bool {
+        match self {
+            SectionType::Default => Self::DEFAULT == other,
+            SectionType::Profile => Self::PROFILE == other,
+            SectionType::SsoSession => Self::SSO_SESSION == other,
+            SectionType::Services => Self::SERVICES == other,
+            SectionType::Plugins => Self::PLUGINS == other,
+            SectionType::Preview => Self::PREVIEW == other,
+            SectionType::Other(o) => o == other,
+        }
+    }
+}
+
+impl<'a> PartialEq<SectionType<'a>> for str {
+    fn eq(&self, other: &SectionType<'a>) -> bool {
+        match other {
+            SectionType::Default => SectionType::DEFAULT == self,
+            SectionType::Profile => SectionType::PROFILE == self,
+            SectionType::SsoSession => SectionType::SSO_SESSION == self,
+            SectionType::Services => SectionType::SERVICES == self,
+            SectionType::Plugins => SectionType::PLUGINS == self,
+            SectionType::Preview => SectionType::PREVIEW == self,
+            SectionType::Other(other) => other == self,
+        }
+    }
 }
 
 impl<'a> SectionType<'a> {
@@ -52,7 +80,7 @@ impl<'a> Parsable<'a> for SectionType<'a> {
             map(tag(Self::SERVICES), |_| Self::Services),
             map(tag(Self::PLUGINS), |_| Self::Plugins),
             map(tag(Self::PREVIEW), |_| Self::Preview),
-            map(alphanumeric1, Self::Other),
+            map(alphanumeric1, |other| Self::Other(Cow::Borrowed(other))),
         ))(input)
     }
 }

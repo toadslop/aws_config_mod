@@ -1,24 +1,45 @@
+use std::{borrow::Cow, fmt::Display};
+
 use super::{section_path::ConfigPathError, SectionPath, SettingName};
 use crate::{lexer::Parsable, util::to_owned_input};
 use nom::{bytes::complete::tag, combinator::eof};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SettingPath<'a> {
+pub struct SettingPath<'a, T>
+where
+    T: Display,
+{
     pub(crate) section_path: SectionPath<'a>,
-    pub(crate) setting_name: SettingName<'a>,
+    pub(crate) setting_name: SettingName<T>,
 }
 
-impl<'a> TryFrom<&'a str> for SettingPath<'a> {
+impl<'a> TryFrom<&'a str> for SettingPath<'a, Cow<'a, str>> {
     type Error = ConfigPathError;
 
     fn try_from(value: &'a str) -> Result<Self, Self::Error> {
         let (_, config_path) = Self::parse(value).map_err(to_owned_input)?;
 
-        Ok(config_path)
+        Ok(config_path.to_owned())
     }
 }
 
-impl<'a> Parsable<'a> for SettingPath<'a> {
+impl<'a> TryFrom<(&'a str, &'a str, &'a str)> for SettingPath<'a, Cow<'a, str>> {
+    type Error = ConfigPathError;
+
+    fn try_from(
+        (section_type, section_name, setting_name): (&'a str, &'a str, &'a str),
+    ) -> Result<Self, Self::Error> {
+        let section_path = SectionPath::try_from((section_type, section_name))?;
+        let (_, setting_name) = SettingName::parse(setting_name).map_err(to_owned_input)?;
+
+        Ok(Self {
+            section_path,
+            setting_name,
+        })
+    }
+}
+
+impl<'a> Parsable<'a> for SettingPath<'a, Cow<'a, str>> {
     type Output = Self;
 
     fn parse(input: &'a str) -> crate::lexer::ParserOutput<'a, Self::Output> {
@@ -39,8 +60,8 @@ impl<'a> Parsable<'a> for SettingPath<'a> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NestedSettingPath<'a> {
     pub(crate) section_path: SectionPath<'a>,
-    pub(crate) setting_name: SettingName<'a>,
-    pub(crate) nested_setting_name: SettingName<'a>,
+    pub(crate) setting_name: SettingName<Cow<'a, str>>,
+    pub(crate) nested_setting_name: SettingName<Cow<'a, str>>,
 }
 
 impl<'a> TryFrom<&'a str> for NestedSettingPath<'a> {

@@ -8,6 +8,12 @@ use std::{fmt::Display, ops::Deref};
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Equal<'a>(&'a str);
 
+impl<'a> Default for Equal<'a> {
+    fn default() -> Self {
+        Self(" = ")
+    }
+}
+
 impl<'a> Display for Equal<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)

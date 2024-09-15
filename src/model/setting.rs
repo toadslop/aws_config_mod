@@ -1,18 +1,39 @@
 use super::{equal::Equal, indent::Indent, setting_name::SettingName, value_type::ValueType};
 use crate::lexer::{Parsable, ParserOutput};
-use std::fmt::Display;
+use std::{
+    borrow::Cow,
+    fmt::{Debug, Display},
+    hash::Hash,
+};
 
 /// Represents a setting in its entirety, including indentation, its name and value, and a comment
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Setting<'a> {
-    pub(crate) setting_name: SettingName<'a>,
+pub struct Setting<'a, T>
+where
+    T: Debug + Clone + PartialEq + Eq + PartialOrd + Ord + Hash + Display,
+{
+    pub(crate) setting_name: SettingName<T>,
     pub(crate) value: ValueType<'a>,
     pub(crate) equal: Equal<'a>,
     pub(crate) leading_spaces: Indent<'a>,
 }
 
-impl<'a> Setting<'a> {
-    pub fn name(&self) -> &SettingName {
+impl<'a> Setting<'a, String> {
+    pub fn new(setting_name: SettingName<String>, value: ValueType<'a>) -> Self {
+        Self {
+            setting_name,
+            value,
+            equal: Equal::default(),
+            leading_spaces: Indent::default(),
+        }
+    }
+}
+
+impl<'a, T> Setting<'a, T>
+where
+    T: Debug + Clone + PartialEq + Eq + PartialOrd + Ord + Hash + Display,
+{
+    pub fn name(&self) -> &SettingName<T> {
         &self.setting_name
     }
 
@@ -25,7 +46,10 @@ impl<'a> Setting<'a> {
     }
 }
 
-impl<'a> Display for Setting<'a> {
+impl<'a, T> Display for Setting<'a, T>
+where
+    T: Display + Debug + Clone + Ord + PartialOrd + Eq + PartialEq + Hash,
+{
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -35,7 +59,7 @@ impl<'a> Display for Setting<'a> {
     }
 }
 
-impl<'a> Parsable<'a> for Setting<'a> {
+impl<'a> Parsable<'a> for Setting<'a, Cow<'a, str>> {
     type Output = Self;
 
     fn parse(input: &'a str) -> ParserOutput<'a, Self::Output> {
@@ -68,10 +92,10 @@ mod test {
 
         assert!(rest.is_empty());
 
-        assert_eq!("region", **set.name());
+        assert_eq!("region", set.name());
 
         match set.value() {
-            crate::ValueType::Single(value) => assert_eq!(**value, "us-west-2"),
+            crate::ValueType::Single(value) => assert_eq!(value, "us-west-2"),
             crate::ValueType::Nested(_) => panic!("Should not be nested"),
         }
 
@@ -87,7 +111,7 @@ mod test {
 
         assert!(rest.is_empty());
 
-        assert_eq!("ec2", **set.name());
+        assert_eq!("ec2", set.name());
 
         let nested = match set.value() {
             crate::ValueType::Single(_) => panic!("Should be nested"),
@@ -96,8 +120,8 @@ mod test {
 
         let first = nested.first().expect("Should have a first");
 
-        assert_eq!(**first.name(), "endpoint_url");
-        assert_eq!(**first.value(), "https://profile-b-ec2-endpoint.aws");
+        assert_eq!(first.name(), "endpoint_url");
+        assert_eq!(first.value(), "https://profile-b-ec2-endpoint.aws");
 
         assert_eq!(set.to_string(), setting)
     }

@@ -1,17 +1,20 @@
-use super::{file_content::FileContent, Section, SectionName, SectionType};
+use super::{
+    file_content::FileContent, header::Header, Section, SectionName, SectionPath, SectionType,
+};
 use crate::lexer::Parsable;
 use nom::{combinator::eof, error::VerboseError, multi::many_till, IResult};
 use std::fmt::Display;
 
 /// Represents a complete aws config file
 #[derive(Debug, PartialEq, Eq, Clone, Hash, Default)]
-pub struct ConfigFile<'a> {
+pub struct ConfigFile<'a, 'b> {
     /// Represents the content of the file. The content includes the sections of the config
     /// as well as full-line whitespace, which includes comments
     pub(crate) content: Vec<FileContent<'a>>,
+    pub(crate) new_content: Vec<FileContent<'b>>,
 }
 
-impl<'a> ConfigFile<'a> {
+impl<'a, 'b> ConfigFile<'a, 'b> {
     pub(crate) fn get_section(
         &self,
         section_type: &SectionType,
@@ -30,9 +33,39 @@ impl<'a> ConfigFile<'a> {
             }
         })
     }
+
+    pub(crate) fn get_section_mut(
+        &mut self,
+        section_type: &SectionType,
+        section_name: Option<&SectionName>,
+    ) -> Option<&mut Section<'a>> {
+        self.content.iter_mut().find_map(|content| match content {
+            FileContent::Whitespace(_) => None,
+            FileContent::Section(section) => {
+                if section.header.section_type == *section_type
+                    && section.header.section_name.as_ref() == section_name
+                {
+                    Some(section)
+                } else {
+                    None
+                }
+            }
+        })
+    }
+
+    pub(crate) fn add_section(&mut self, section_path: SectionPath<'b>) -> &'a mut Section {
+        let new_section: Section = Section::new(Header::from(section_path.clone()));
+        self.new_content.push(FileContent::Section(new_section));
+
+        self.get_section_mut(
+            &section_path.section_type,
+            section_path.section_name.as_ref(),
+        )
+        .unwrap()
+    }
 }
 
-impl<'a> Display for ConfigFile<'a> {
+impl<'a, 'b> Display for ConfigFile<'a, 'b> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -45,12 +78,15 @@ impl<'a> Display for ConfigFile<'a> {
     }
 }
 
-impl<'a> Parsable<'a> for ConfigFile<'a> {
+impl<'a, 'b> Parsable<'a> for ConfigFile<'a, 'b> {
     type Output = Self;
 
     fn parse(input: &'a str) -> IResult<&'a str, Self::Output, VerboseError<&'a str>> {
         let (next, (content, _)) = many_till(FileContent::parse, eof)(input)?;
-        let config_file = Self { content };
+        let config_file = Self {
+            content,
+            new_content: vec![],
+        };
 
         Ok((next, config_file))
     }

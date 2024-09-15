@@ -1,18 +1,36 @@
 use super::{
     header::Header, nested_setting::NestedSetting, SectionName, SectionType, Setting, SettingName,
+    Value, ValueType,
 };
 use crate::lexer::{Parsable, ParserOutput};
 use nom::multi::many0;
-use std::fmt::Display;
+use std::{
+    borrow::Cow,
+    fmt::{Debug, Display},
+    hash::Hash,
+};
 
 /// Represents an entire section, including the section type, the profile name, and all of the settings
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default, Hash)]
-pub struct Section<'a> {
+pub struct Section<'a, T>
+where
+    T: Clone + PartialEq + Eq + PartialOrd + Ord + Display + Debug + Hash,
+{
     pub(crate) header: Header<'a>,
-    pub(crate) settings: Vec<Setting<'a>>,
+    pub(crate) settings: Vec<Setting<'a, T>>,
 }
 
-impl<'a> Section<'a> {
+impl<'a, T> Section<'a, T>
+where
+    T: Clone + PartialEq + Eq + PartialOrd + Ord + Display + Debug + Hash,
+{
+    pub fn new(header: Header<'a>) -> Self {
+        Self {
+            header,
+            settings: Vec::new(),
+        }
+    }
+
     pub fn get_type(&self) -> &SectionType {
         &self.header.section_type
     }
@@ -21,11 +39,14 @@ impl<'a> Section<'a> {
         self.header.section_name.as_ref()
     }
 
-    pub fn settings(&self) -> &[Setting<'a>] {
+    pub fn settings(&self) -> &[Setting<'a, T>] {
         &self.settings
     }
 
-    pub fn get_setting(&self, setting_name: SettingName) -> Option<&Setting> {
+    pub fn get_setting(&self, setting_name: SettingName<T>) -> Option<&Setting<T>>
+    where
+        T: Clone + PartialEq + Eq + PartialOrd + Ord + Display,
+    {
         self.settings
             .iter()
             .find(|setting| *setting.name() == setting_name)
@@ -33,8 +54,8 @@ impl<'a> Section<'a> {
 
     pub fn get_nested_setting(
         &self,
-        setting_name: SettingName,
-        nested_setting_name: SettingName,
+        setting_name: SettingName<T>,
+        nested_setting_name: SettingName<Cow<'a, str>>,
     ) -> Option<&NestedSetting> {
         let setting = self.get_setting(setting_name)?;
 
@@ -45,9 +66,18 @@ impl<'a> Section<'a> {
                 .find(|setting| *setting.name() == nested_setting_name),
         }
     }
+
+    pub fn set(&mut self, setting_name: SettingName<String>, value: Value<'a>) {
+        let value = ValueType::Single(value);
+        let setting = Setting::new(setting_name, value);
+        self.settings.push(setting)
+    }
 }
 
-impl<'a> Display for Section<'a> {
+impl<'a, T> Display for Section<'a, T>
+where
+    T: Display + Clone + Ord + Debug + Hash,
+{
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -61,7 +91,7 @@ impl<'a> Display for Section<'a> {
     }
 }
 
-impl<'a> Parsable<'a> for Section<'a> {
+impl<'a> Parsable<'a> for Section<'a, Cow<'a, str>> {
     type Output = Self;
 
     fn parse(input: &'a str) -> ParserOutput<'a, Self::Output> {
@@ -96,7 +126,7 @@ dynamodb =
         let settings = section.settings;
         let first = &settings[0];
 
-        assert_eq!(**first.name(), "region");
+        assert_eq!(**first.name(), *"region");
         match first.value() {
             crate::ValueType::Single(_) => (),
             crate::ValueType::Nested(_) => panic!("Should not be nested"),
@@ -116,14 +146,14 @@ dynamodb =
         let settings = &section.settings;
         let first = &settings[0];
 
-        assert_eq!(**first.name(), "ec2");
+        assert_eq!(**first.name(), *"ec2");
         match first.value() {
             crate::ValueType::Single(_) => panic!("Should not be single"),
             crate::ValueType::Nested(nested) => nested,
         };
 
         let second = &settings[1];
-        assert_eq!(**second.name(), "dynamodb");
+        assert_eq!(**second.name(), *"dynamodb");
         match second.value() {
             crate::ValueType::Single(_) => panic!("Should not be single"),
             crate::ValueType::Nested(nested) => nested,

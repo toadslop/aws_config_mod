@@ -1,4 +1,4 @@
-use aws_config_modify::{AwsConfigFile, SectionPath, SectionType, SettingPath, ValueType};
+use aws_config_modify::{AwsConfigFile, SectionPath, SectionType, SettingPath, Value, ValueType};
 
 const SAMPLE_FILE: &str = r#"
 [profile A]
@@ -24,27 +24,27 @@ fn can_get_a_section_with_a_string() {
         .expect("This section should exist");
 
     let name = section.get_name().expect("Should have a name");
-    assert_eq!(**name, "A");
+    assert_eq!(name, "A");
     let mut settings = section.settings().iter();
     let first = settings.next().expect("Should have one entry");
-    assert_eq!(**first.name(), "credential_source");
+    assert_eq!(first.name(), "credential_source");
 
     let value = match first.value() {
         ValueType::Single(first) => first,
         ValueType::Nested(_) => panic!("Should not be nested"),
     };
 
-    assert_eq!(**value, "Ec2InstanceMetadata");
+    assert_eq!(value, "Ec2InstanceMetadata");
 
     let second = settings.next().expect("Should have second entry");
-    assert_eq!(**second.name(), "endpoint_url");
+    assert_eq!(second.name(), "endpoint_url");
 
     let value = match second.value() {
         ValueType::Single(second) => second,
         ValueType::Nested(_) => panic!("Should not be nested"),
     };
 
-    assert_eq!(**value, "https://profile-a-endpoint.aws/");
+    assert_eq!(value, "https://profile-a-endpoint.aws/");
 }
 
 #[test]
@@ -76,9 +76,8 @@ fn can_get_a_nested_section() {
         .settings()
         .first()
         .expect("Should be a first setting");
-    dbg!(setting);
 
-    assert_eq!(**setting.name(), "ec2");
+    assert_eq!(setting.name(), "ec2");
 
     let settings = match setting.value() {
         ValueType::Single(_) => panic!("Should be nested"),
@@ -89,10 +88,9 @@ fn can_get_a_nested_section() {
         .first()
         .expect("Should have a first nested setting");
 
-    assert_eq!(**setting.name(), "endpoint_url");
+    assert_eq!(setting.name(), "endpoint_url");
 
-    assert_eq!(**setting.value(), "https://profile-b-ec2-endpoint.aws");
-    assert!(setting.is_nested())
+    assert_eq!(setting.value(), "https://profile-b-ec2-endpoint.aws");
 }
 
 #[test]
@@ -104,15 +102,68 @@ fn can_get_a_value_from_path_string() {
         .get_setting(setting_path)
         .expect("should have the setting");
 
-    assert_eq!(**setting.name(), "credential_source");
+    assert_eq!(setting.name(), "credential_source");
 
     let value = match setting.value() {
         ValueType::Single(value) => value,
         ValueType::Nested(_) => panic!("Should not be nested"),
     };
 
-    assert_eq!(**value, "Ec2InstanceMetadata")
+    assert_eq!(value, "Ec2InstanceMetadata")
 }
+
+#[test]
+fn can_get_a_value_from_path_tuple() {
+    let config = AwsConfigFile::parse(SAMPLE_FILE).expect("Sample file should be valid");
+    let setting_path =
+        SettingPath::try_from(("profile", "A", "credential_source")).expect("Should parse");
+
+    let setting = config
+        .get_setting(setting_path)
+        .expect("should have the setting");
+
+    assert_eq!(setting.name(), "credential_source");
+
+    let value = match setting.value() {
+        ValueType::Single(value) => value,
+        ValueType::Nested(_) => panic!("Should not be nested"),
+    };
+
+    assert_eq!(value, "Ec2InstanceMetadata")
+}
+
+// #[test]
+// fn can_get_a_value_from_path_tuple_section_type() {
+//     let config = AwsConfigFile::parse(SAMPLE_FILE).expect("Sample file should be valid");
+//     let setting_path = SettingPath::try_from((SectionType::Profile, "A", "credential_source"))
+//         .expect("Should parse");
+
+//     let setting = config
+//         .get_setting(setting_path)
+//         .expect("should have the setting");
+
+//     assert_eq!(**setting.name(), "credential_source");
+
+//     let value = match setting.value() {
+//         ValueType::Single(value) => value,
+//         ValueType::Nested(_) => panic!("Should not be nested"),
+//     };
+
+//     assert_eq!(**value, "Ec2InstanceMetadata")
+// }
 
 // TODO: nested path from string
 // TODO: values from tuples
+
+#[test]
+fn can_set_a_value() {
+    let mut config = AwsConfigFile::parse(SAMPLE_FILE).expect("Sample file should be valid");
+
+    {
+        let setting_path =
+            SettingPath::try_from("profile.A.credential_source").expect("Should parse");
+        config.set(setting_path, Value::from("my-new-credential-source"));
+    }
+
+    config.clone();
+}

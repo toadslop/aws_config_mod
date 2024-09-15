@@ -3,12 +3,24 @@ use nom::{
     branch::alt, bytes::complete::tag, character::complete::alphanumeric1, combinator::recognize,
     multi::many1_count,
 };
-use std::{fmt::Display, ops::Deref};
+use std::{borrow::Cow, fmt::Display, ops::Deref};
 
 /// Represents the custom profile name associated with a section. In other words, if we see
 /// [profile dev], then 'dev' is the profile name
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Default, Hash)]
-pub struct SectionName<'a>(&'a str);
+pub struct SectionName<'a>(Cow<'a, str>);
+
+impl<'a> PartialEq<str> for SectionName<'a> {
+    fn eq(&self, other: &str) -> bool {
+        self.0 == other
+    }
+}
+
+impl<'a> PartialEq<SectionName<'a>> for str {
+    fn eq(&self, other: &SectionName) -> bool {
+        self == other.0
+    }
+}
 
 impl<'a> Display for SectionName<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -17,7 +29,7 @@ impl<'a> Display for SectionName<'a> {
 }
 
 impl<'a> Deref for SectionName<'a> {
-    type Target = &'a str;
+    type Target = str;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -31,6 +43,6 @@ impl<'a> Parsable<'a> for SectionName<'a> {
         let (next, heading_name) =
             recognize(many1_count(alt((alphanumeric1, tag("_"), tag("-")))))(input)?;
 
-        Ok((next, Self(heading_name)))
+        Ok((next, Self(Cow::Borrowed(heading_name))))
     }
 }

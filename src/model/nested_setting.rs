@@ -2,14 +2,14 @@ use super::{
     equal::Equal, indent::Indent, setting_name::SettingName, value::Value, whitespace::Whitespace,
 };
 use crate::lexer::{Parsable, ParserOutput};
-use std::fmt::Display;
+use std::{borrow::Cow, fmt::Display};
 
 /// Represents a nested setting in its entirety, including indentation, its name and value, and a comment.
 /// Since the AWS config file is not recursive, we have this separate type to represent the nested item
 /// to avoid defining an unnecessary recursive type.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct NestedSetting<'a> {
-    pub(crate) setting_name: SettingName<'a>,
+    pub(crate) setting_name: SettingName<Cow<'a, str>>,
     pub(crate) value: Value<'a>,
     pub(crate) equal: Equal<'a>,
     pub(crate) leading_spaces: Indent<'a>,
@@ -17,16 +17,12 @@ pub struct NestedSetting<'a> {
 }
 
 impl<'a> NestedSetting<'a> {
-    pub fn name(&self) -> &SettingName {
+    pub fn name(&self) -> &SettingName<Cow<'a, str>> {
         &self.setting_name
     }
 
     pub fn value(&self) -> &Value {
         &self.value
-    }
-
-    pub fn is_nested(&self) -> bool {
-        !self.leading_spaces.is_empty()
     }
 }
 
@@ -74,7 +70,7 @@ mod test {
 
         assert!(rest.is_empty());
 
-        assert_eq!("us-west-2", *set.value);
+        assert_eq!(*"us-west-2", *set.value);
 
         assert_eq!(set.to_string(), setting)
     }
