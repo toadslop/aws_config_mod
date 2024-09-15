@@ -1,5 +1,5 @@
 use super::{SectionName, SectionType};
-use crate::lexer::Parsable;
+use crate::{lexer::Parsable, util::to_owned_input};
 use nom::{bytes::complete::tag, combinator::eof, error::VerboseError};
 use thiserror::Error;
 
@@ -47,6 +47,22 @@ impl<'a> TryFrom<(SectionType<'a>, &'a str)> for SectionPath<'a> {
     }
 }
 
+impl<'a> TryFrom<SectionType<'a>> for SectionPath<'a> {
+    type Error = ConfigPathError;
+
+    fn try_from(section_type: SectionType<'a>) -> Result<Self, Self::Error> {
+        let section_path = match section_type {
+            SectionType::Default | SectionType::Preview | SectionType::Plugins => SectionPath {
+                section_type,
+                section_name: None,
+            },
+            _ => Err(ConfigPathError::RequiresSectionName)?,
+        };
+
+        Ok(section_path)
+    }
+}
+
 impl<'a> From<(SectionType<'a>, Option<SectionName<'a>>)> for SectionPath<'a> {
     fn from((section_type, section_name): (SectionType<'a>, Option<SectionName<'a>>)) -> Self {
         SectionPath {
@@ -56,20 +72,21 @@ impl<'a> From<(SectionType<'a>, Option<SectionName<'a>>)> for SectionPath<'a> {
     }
 }
 
-fn to_owned_input(error: nom::Err<VerboseError<&str>>) -> nom::Err<VerboseError<String>> {
-    error.map(|error| VerboseError {
-        errors: error
-            .errors
-            .into_iter()
-            .map(|(a, b)| (a.to_string(), b))
-            .collect::<Vec<_>>(),
-    })
+impl<'a> From<(SectionType<'a>, SectionName<'a>)> for SectionPath<'a> {
+    fn from((section_type, section_name): (SectionType<'a>, SectionName<'a>)) -> Self {
+        SectionPath {
+            section_type,
+            section_name: Some(section_name),
+        }
+    }
 }
 
 #[derive(Debug, Error)]
 pub enum ConfigPathError {
     #[error("Failed to parse config path from string:\n\t{0}")]
     ParseError(#[from] nom::Err<VerboseError<String>>),
+    #[error("The provided section type requires a section name")]
+    RequiresSectionName,
 }
 
 impl<'a> Parsable<'a> for SectionPath<'a> {

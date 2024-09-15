@@ -1,5 +1,5 @@
 use crate::lexer::{Parsable, ParserOutput};
-use nom::bytes::complete::take_till;
+use nom::{character::complete::none_of, combinator::recognize, multi::many1_count};
 use std::{fmt::Display, ops::Deref};
 
 /// Represents the value of a setting. In other words, whatever follows the = sign in a configuration setting.
@@ -18,7 +18,7 @@ impl<'a> Parsable<'a> for Value<'a> {
     type Output = Self;
 
     fn parse(input: &'a str) -> ParserOutput<'a, Self::Output> {
-        let (input, val) = take_till(|c: char| c.is_whitespace())(input)?;
+        let (input, val) = recognize(many1_count(none_of("#\n\t \r")))(input)?;
 
         Ok((input, Value(val)))
     }

@@ -1,5 +1,4 @@
 mod config_file;
-mod config_path;
 mod entry;
 mod equal;
 mod file_content;
@@ -11,12 +10,12 @@ mod section_path;
 mod section_type;
 mod setting;
 mod setting_name;
+mod setting_path;
 mod subsection_setting;
 mod value;
 mod whitespace;
 
 pub use config_file::ConfigFile;
-pub use config_path::ConfigPath;
 pub use entry::Entry;
 pub use section::Section;
 pub use section_name::SectionName;
@@ -24,5 +23,6 @@ pub use section_path::SectionPath;
 pub use section_type::SectionType;
 pub use setting::Setting;
 pub use setting_name::SettingName;
+pub use setting_path::SettingPath;
 pub use subsection_setting::SubsectionSetting;
 pub use value::Value;

@@ -12,6 +12,16 @@ pub struct SubsectionSetting<'a> {
     pub(crate) sub_settings: Vec<Setting<'a>>,
 }
 
+impl<'a> SubsectionSetting<'a> {
+    pub fn name(&self) -> &SettingName {
+        &self.setting_name
+    }
+
+    pub fn value(&self) -> &[Setting<'a>] {
+        &self.sub_settings
+    }
+}
+
 impl<'a> Display for SubsectionSetting<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(

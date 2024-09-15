@@ -14,6 +14,20 @@ pub struct Setting<'a> {
     pub(crate) whitespace: Whitespace<'a>,
 }
 
+impl<'a> Setting<'a> {
+    pub fn name(&self) -> &SettingName {
+        &self.setting_name
+    }
+
+    pub fn value(&self) -> &Value {
+        &self.value
+    }
+
+    pub fn is_nested(&self) -> bool {
+        !self.leading_spaces.is_empty()
+    }
+}
+
 impl<'a> Display for Setting<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(

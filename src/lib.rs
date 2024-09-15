@@ -14,12 +14,13 @@
 mod error;
 mod lexer;
 mod model;
+mod util;
 
 pub use error::Error;
 use lexer::Parsable;
 use model::ConfigFile;
 pub use model::{
-    ConfigPath, Entry, Section, SectionName, SectionPath, SectionType, Setting, SettingName,
+    Entry, Section, SectionName, SectionPath, SectionType, Setting, SettingName, SettingPath,
     SubsectionSetting, Value,
 };
 use nom::error::VerboseError;
@@ -54,6 +55,10 @@ impl<'a> AwsConfigFile<'a> {
         } = config_path;
 
         self.0.get_section(&section_type, section_name.as_ref())
+    }
+
+    pub fn get_setting(&self, setting_path: SettingPath) -> Option<&Setting> {
+        todo!()
     }
 }
 
