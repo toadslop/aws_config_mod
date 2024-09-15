@@ -19,10 +19,6 @@ impl<'a> Setting<'a> {
     pub fn value(&self) -> &ValueType {
         &self.value
     }
-
-    pub fn is_nested(&self) -> bool {
-        !self.leading_spaces.is_empty()
-    }
 }
 
 impl<'a> Display for Setting<'a> {
