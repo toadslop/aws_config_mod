@@ -20,8 +20,8 @@ pub use error::Error;
 use lexer::Parsable;
 use model::ConfigFile;
 pub use model::{
-    Entry, Section, SectionName, SectionPath, SectionType, Setting, SettingName, SettingPath,
-    SubsectionSetting, Value,
+    NestedSetting, NestedSettingPath, Section, SectionName, SectionPath, SectionType, Setting,
+    SettingName, SettingPath, SubsectionSetting, Value, ValueType,
 };
 use nom::error::VerboseError;
 use std::fmt::Display;
@@ -58,7 +58,25 @@ impl<'a> AwsConfigFile<'a> {
     }
 
     pub fn get_setting(&self, setting_path: SettingPath) -> Option<&Setting> {
-        todo!()
+        let SettingPath {
+            section_path,
+            setting_name,
+        } = setting_path;
+
+        let section = self.get_section(section_path)?;
+
+        section.get_setting(setting_name)
+    }
+
+    pub fn get_nested_setting(&self, setting_path: NestedSettingPath) -> Option<&NestedSetting> {
+        let NestedSettingPath {
+            section_path,
+            setting_name,
+            nested_setting_name,
+        } = setting_path;
+
+        let section = self.get_section(section_path)?;
+        section.get_nested_setting(setting_name, nested_setting_name)
     }
 }
 

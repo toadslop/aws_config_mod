@@ -1,4 +1,4 @@
-use aws_config_modify::{AwsConfigFile, Entry, SectionPath, SectionType, SettingPath};
+use aws_config_modify::{AwsConfigFile, SectionPath, SectionType, SettingPath, ValueType};
 
 const SAMPLE_FILE: &str = r#"
 [profile A]
@@ -27,23 +27,23 @@ fn can_get_a_section_with_a_string() {
     assert_eq!(**name, "A");
     let mut settings = section.settings().iter();
     let first = settings.next().expect("Should have one entry");
-    assert_eq!(**first.key(), "credential_source");
+    assert_eq!(**first.name(), "credential_source");
 
-    let first = match first {
-        Entry::Single(setting) => setting,
-        Entry::WithSubsettings(_) => panic!("Should not have subsettings"),
+    let value = match first.value() {
+        ValueType::Single(first) => first,
+        ValueType::Nested(_) => panic!("Should not be nested"),
     };
-    let value = first.value();
+
     assert_eq!(**value, "Ec2InstanceMetadata");
 
     let second = settings.next().expect("Should have second entry");
-    assert_eq!(**second.key(), "endpoint_url");
+    assert_eq!(**second.name(), "endpoint_url");
 
-    let second = match second {
-        Entry::Single(setting) => setting,
-        Entry::WithSubsettings(_) => panic!("Should not have subsettings"),
+    let value = match second.value() {
+        ValueType::Single(second) => second,
+        ValueType::Nested(_) => panic!("Should not be nested"),
     };
-    let value = second.value();
+
     assert_eq!(**value, "https://profile-a-endpoint.aws/");
 }
 
@@ -77,19 +77,20 @@ fn can_get_a_nested_section() {
         .first()
         .expect("Should be a first setting");
     dbg!(setting);
-    let setting = match setting {
-        Entry::Single(_) => panic!("Should not be a single setting"),
-        Entry::WithSubsettings(setting) => setting,
-    };
 
     assert_eq!(**setting.name(), "ec2");
 
-    let setting = setting
-        .value()
+    let settings = match setting.value() {
+        ValueType::Single(_) => panic!("Should be nested"),
+        ValueType::Nested(nested) => nested,
+    };
+
+    let setting = settings
         .first()
-        .expect("Should be a first subsetting");
+        .expect("Should have a first nested setting");
 
     assert_eq!(**setting.name(), "endpoint_url");
+
     assert_eq!(**setting.value(), "https://profile-b-ec2-endpoint.aws");
     assert!(setting.is_nested())
 }
@@ -97,7 +98,21 @@ fn can_get_a_nested_section() {
 #[test]
 fn can_get_a_value_from_path_string() {
     let config = AwsConfigFile::parse(SAMPLE_FILE).expect("Sample file should be valid");
-    let section_path = SettingPath::try_from("profile.A.credential_source").expect("Should parse");
+    let setting_path = SettingPath::try_from("profile.A.credential_source").expect("Should parse");
 
-    // config.get_setting();
+    let setting = config
+        .get_setting(setting_path)
+        .expect("should have the setting");
+
+    assert_eq!(**setting.name(), "credential_source");
+
+    let value = match setting.value() {
+        ValueType::Single(value) => value,
+        ValueType::Nested(_) => panic!("Should not be nested"),
+    };
+
+    assert_eq!(**value, "Ec2InstanceMetadata")
 }
+
+// TODO: nested path from string
+// TODO: values from tuples

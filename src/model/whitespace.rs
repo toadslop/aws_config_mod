@@ -9,7 +9,7 @@ use std::{fmt::Display, ops::Deref};
 
 /// Represents meaningless whitespace, including comments. Does not represent meaningful indentation.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Default, Hash)]
-pub(crate) struct Whitespace<'a>(&'a str);
+pub(crate) struct Whitespace<'a>(pub(crate) &'a str);
 
 impl<'a> Deref for Whitespace<'a> {
     type Target = &'a str;

@@ -92,6 +92,8 @@ services = profileB
 [services profileB]
 ec2 = 
   endpoint_url = https://profile-b-ec2-endpoint.aws
+dynamodb = 
+  endpoint_url = http://localhost:8000
 "#;
 
     const EMPTY_CONFIG: &str = r#" "#;
