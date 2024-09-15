@@ -4,25 +4,25 @@ use nom::{bytes::complete::tag, combinator::eof, error::VerboseError};
 use thiserror::Error;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SectionPath<'a> {
-    pub(crate) section_type: SectionType<'a>,
-    pub(crate) section_name: Option<SectionName<'a>>,
+pub struct SectionPath {
+    pub(crate) section_type: SectionType,
+    pub(crate) section_name: Option<SectionName>,
 }
 
-impl<'a> TryFrom<&'a str> for SectionPath<'a> {
+impl TryFrom<&str> for SectionPath {
     type Error = ConfigPathError;
 
-    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
         let (_, section_path) = Self::parse(value).map_err(to_owned_input)?;
 
         Ok(section_path)
     }
 }
 
-impl<'a> TryFrom<(&'a str, &'a str)> for SectionPath<'a> {
+impl TryFrom<(&str, &str)> for SectionPath {
     type Error = ConfigPathError;
 
-    fn try_from((section_type, section_name): (&'a str, &'a str)) -> Result<Self, Self::Error> {
+    fn try_from((section_type, section_name): (&str, &str)) -> Result<Self, Self::Error> {
         let (next, section_type) = SectionType::parse(section_type).map_err(to_owned_input)?;
         eof(next).map_err(to_owned_input)?;
         let (next, section_name) = SectionName::parse(section_name).map_err(to_owned_input)?;
@@ -33,12 +33,10 @@ impl<'a> TryFrom<(&'a str, &'a str)> for SectionPath<'a> {
     }
 }
 
-impl<'a> TryFrom<(SectionType<'a>, &'a str)> for SectionPath<'a> {
+impl TryFrom<(SectionType, &str)> for SectionPath {
     type Error = ConfigPathError;
 
-    fn try_from(
-        (section_type, section_name): (SectionType<'a>, &'a str),
-    ) -> Result<Self, Self::Error> {
+    fn try_from((section_type, section_name): (SectionType, &str)) -> Result<Self, Self::Error> {
         let (next, section_name) = SectionName::parse(section_name).map_err(to_owned_input)?;
         eof(next).map_err(to_owned_input)?;
 
@@ -47,10 +45,10 @@ impl<'a> TryFrom<(SectionType<'a>, &'a str)> for SectionPath<'a> {
     }
 }
 
-impl<'a> TryFrom<SectionType<'a>> for SectionPath<'a> {
+impl TryFrom<SectionType> for SectionPath {
     type Error = ConfigPathError;
 
-    fn try_from(section_type: SectionType<'a>) -> Result<Self, Self::Error> {
+    fn try_from(section_type: SectionType) -> Result<Self, Self::Error> {
         let section_path = match section_type {
             SectionType::Default | SectionType::Preview | SectionType::Plugins => SectionPath {
                 section_type,
@@ -63,8 +61,8 @@ impl<'a> TryFrom<SectionType<'a>> for SectionPath<'a> {
     }
 }
 
-impl<'a> From<(SectionType<'a>, Option<SectionName<'a>>)> for SectionPath<'a> {
-    fn from((section_type, section_name): (SectionType<'a>, Option<SectionName<'a>>)) -> Self {
+impl From<(SectionType, Option<SectionName>)> for SectionPath {
+    fn from((section_type, section_name): (SectionType, Option<SectionName>)) -> Self {
         SectionPath {
             section_type,
             section_name,
@@ -72,8 +70,8 @@ impl<'a> From<(SectionType<'a>, Option<SectionName<'a>>)> for SectionPath<'a> {
     }
 }
 
-impl<'a> From<(SectionType<'a>, SectionName<'a>)> for SectionPath<'a> {
-    fn from((section_type, section_name): (SectionType<'a>, SectionName<'a>)) -> Self {
+impl From<(SectionType, SectionName)> for SectionPath {
+    fn from((section_type, section_name): (SectionType, SectionName)) -> Self {
         SectionPath {
             section_type,
             section_name: Some(section_name),
@@ -89,7 +87,7 @@ pub enum ConfigPathError {
     RequiresSectionName,
 }
 
-impl<'a> Parsable<'a> for SectionPath<'a> {
+impl<'a> Parsable<'a> for SectionPath {
     type Output = Self;
 
     fn parse(input: &'a str) -> crate::lexer::ParserOutput<'a, Self::Output> {

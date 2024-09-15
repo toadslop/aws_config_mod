@@ -11,13 +11,13 @@ use std::{
 
 /// Represents an entire section, including the section type, the profile name, and all of the settings
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default, Hash)]
-pub struct Section<'a> {
-    pub(crate) header: Header<'a>,
-    pub(crate) settings: Vec<Setting<'a>>,
+pub struct Section {
+    pub(crate) header: Header,
+    pub(crate) settings: Vec<Setting>,
 }
 
-impl<'a> Section<'a> {
-    pub fn new(header: Header<'a>) -> Self {
+impl Section {
+    pub fn new(header: Header) -> Self {
         Self {
             header,
             settings: Vec::new(),
@@ -32,11 +32,11 @@ impl<'a> Section<'a> {
         self.header.section_name.as_ref()
     }
 
-    pub fn settings(&self) -> &[Setting<'a>] {
+    pub fn settings(&self) -> &[Setting] {
         &self.settings
     }
 
-    pub fn get_setting(&self, setting_name: SettingName<'a>) -> Option<&Setting<'a>> {
+    pub fn get_setting(&self, setting_name: SettingName) -> Option<&Setting> {
         self.settings
             .iter()
             .find(|setting| *setting.name() == setting_name)
@@ -44,8 +44,8 @@ impl<'a> Section<'a> {
 
     pub fn get_nested_setting(
         &self,
-        setting_name: SettingName<'a>,
-        nested_setting_name: SettingName<'a>,
+        setting_name: SettingName,
+        nested_setting_name: SettingName,
     ) -> Option<&NestedSetting> {
         let setting = self.get_setting(setting_name)?;
 
@@ -57,14 +57,14 @@ impl<'a> Section<'a> {
         }
     }
 
-    pub fn set(&mut self, setting_name: SettingName<'a>, value: Value<'a>) {
+    pub fn set(&mut self, setting_name: SettingName, value: Value) {
         let value = ValueType::Single(value);
         let setting = Setting::new(setting_name, value);
         self.settings.push(setting)
     }
 }
 
-impl<'a> Display for Section<'a> {
+impl Display for Section {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -78,7 +78,7 @@ impl<'a> Display for Section<'a> {
     }
 }
 
-impl<'a> Parsable<'a> for Section<'a> {
+impl<'a> Parsable<'a> for Section {
     type Output = Self;
 
     fn parse(input: &'a str) -> ParserOutput<'a, Self::Output> {

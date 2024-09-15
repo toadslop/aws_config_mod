@@ -1,11 +1,11 @@
 use crate::lexer::{Parsable, ParserOutput};
 use nom::{branch::alt, bytes::complete::tag, character::complete::alphanumeric1, combinator::map};
-use std::{borrow::Cow, fmt::Display};
+use std::fmt::Display;
 
 /// Represents the various section types of an AWS config file. If an unknown section type is
 /// encountered, rather than failing it's value is collected under [SectionType::Other]
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default, Hash)]
-pub enum SectionType<'a> {
+pub enum SectionType {
     #[default]
     Default,
     Profile,
@@ -13,10 +13,10 @@ pub enum SectionType<'a> {
     Services,
     Plugins,
     Preview,
-    Other(Cow<'a, str>),
+    Other(String),
 }
 
-impl<'a> PartialEq<str> for SectionType<'a> {
+impl PartialEq<str> for SectionType {
     fn eq(&self, other: &str) -> bool {
         match self {
             SectionType::Default => Self::DEFAULT == other,
@@ -30,8 +30,8 @@ impl<'a> PartialEq<str> for SectionType<'a> {
     }
 }
 
-impl<'a> PartialEq<SectionType<'a>> for str {
-    fn eq(&self, other: &SectionType<'a>) -> bool {
+impl PartialEq<SectionType> for str {
+    fn eq(&self, other: &SectionType) -> bool {
         match other {
             SectionType::Default => SectionType::DEFAULT == self,
             SectionType::Profile => SectionType::PROFILE == self,
@@ -44,7 +44,7 @@ impl<'a> PartialEq<SectionType<'a>> for str {
     }
 }
 
-impl<'a> SectionType<'a> {
+impl SectionType {
     const PROFILE: &'static str = "profile";
     const DEFAULT: &'static str = "default";
     const SSO_SESSION: &'static str = "sso-session";
@@ -53,7 +53,7 @@ impl<'a> SectionType<'a> {
     const PREVIEW: &'static str = "preview";
 }
 
-impl<'a> Display for SectionType<'a> {
+impl Display for SectionType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let as_str = match self {
             SectionType::Profile => Self::PROFILE,
@@ -69,7 +69,7 @@ impl<'a> Display for SectionType<'a> {
     }
 }
 
-impl<'a> Parsable<'a> for SectionType<'a> {
+impl<'a> Parsable<'a> for SectionType {
     type Output = Self;
 
     fn parse(input: &'a str) -> ParserOutput<'a, Self::Output> {
@@ -80,7 +80,7 @@ impl<'a> Parsable<'a> for SectionType<'a> {
             map(tag(Self::SERVICES), |_| Self::Services),
             map(tag(Self::PLUGINS), |_| Self::Plugins),
             map(tag(Self::PREVIEW), |_| Self::Preview),
-            map(alphanumeric1, |other| Self::Other(Cow::Borrowed(other))),
+            map(alphanumeric1, |other: &str| Self::Other(other.to_string())),
         ))(input)
     }
 }

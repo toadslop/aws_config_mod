@@ -4,28 +4,28 @@ use std::{fmt::Display, ops::Deref};
 
 /// Represents non-comment whitespace at the head of start of a line
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Hash, Default)]
-pub(crate) struct Indent<'a>(&'a str);
+pub(crate) struct Indent(String);
 
-impl<'a> Display for Indent<'a> {
+impl Display for Indent {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }
 }
 
-impl<'a> Deref for Indent<'a> {
-    type Target = &'a str;
+impl Deref for Indent {
+    type Target = str;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl<'a> Parsable<'a> for Indent<'a> {
+impl<'a> Parsable<'a> for Indent {
     type Output = Self;
 
     fn parse(input: &'a str) -> ParserOutput<'a, Self::Output> {
         let (next, ws) = multispace0(input)?;
 
-        Ok((next, Self(ws)))
+        Ok((next, Self(ws.to_string())))
     }
 }

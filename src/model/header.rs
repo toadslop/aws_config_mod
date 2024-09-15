@@ -12,14 +12,14 @@ use std::fmt::Display;
 
 /// A header of a config section. Contains the section type as well as the profile.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default, Hash)]
-pub struct Header<'a> {
-    pub(crate) section_name: Option<SectionName<'a>>,
-    pub(crate) section_type: SectionType<'a>,
-    pub(crate) whitespace: Whitespace<'a>,
+pub struct Header {
+    pub(crate) section_name: Option<SectionName>,
+    pub(crate) section_type: SectionType,
+    pub(crate) whitespace: Whitespace,
 }
 
-impl<'a> Header<'a> {
-    pub fn new(section_type: SectionType<'a>, section_name: Option<SectionName<'a>>) -> Self {
+impl Header {
+    pub fn new(section_type: SectionType, section_name: Option<SectionName>) -> Self {
         Self {
             section_name,
             section_type,
@@ -28,13 +28,13 @@ impl<'a> Header<'a> {
     }
 }
 
-impl<'a> From<SectionPath<'a>> for Header<'a> {
-    fn from(value: SectionPath<'a>) -> Self {
+impl From<SectionPath> for Header {
+    fn from(value: SectionPath) -> Self {
         Self::new(value.section_type, value.section_name)
     }
 }
 
-impl<'a> Display for Header<'a> {
+impl Display for Header {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if let Some(profile) = &self.section_name {
             write!(f, "[{} {}]{}", self.section_type, profile, self.whitespace)
@@ -44,7 +44,7 @@ impl<'a> Display for Header<'a> {
     }
 }
 
-impl<'a> Parsable<'a> for Header<'a> {
+impl<'a> Parsable<'a> for Header {
     type Output = Self;
 
     fn parse(input: &'a str) -> ParserOutput<'a, Self::Output> {

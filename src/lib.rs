@@ -33,11 +33,11 @@ use std::fmt::Display;
 /// - Load the config file automatically, either from an environment variable or from the default location
 /// - Handle more type-specific info
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct AwsConfigFile<'a>(ConfigFile<'a>);
+pub struct AwsConfigFile(ConfigFile);
 
-impl<'a> AwsConfigFile<'a> {
+impl AwsConfigFile {
     /// Given a [str], return it parsed as [AwsConfigFile]
-    pub fn parse(s: &'a str) -> Result<Self, nom::Err<VerboseError<&'a str>>> {
+    pub fn parse(s: &str) -> Result<Self, nom::Err<VerboseError<&str>>> {
         let (_, config_file) = ConfigFile::parse(s)?;
 
         Ok(Self(config_file))
@@ -57,7 +57,7 @@ impl<'a> AwsConfigFile<'a> {
         self.0.get_section(&section_type, section_name.as_ref())
     }
 
-    pub fn get_setting(&'a self, setting_path: SettingPath<'a>) -> Option<&Setting<'a>> {
+    pub fn get_setting(&self, setting_path: SettingPath) -> Option<&Setting> {
         let SettingPath {
             section_path,
             setting_name,
@@ -68,10 +68,7 @@ impl<'a> AwsConfigFile<'a> {
         section.get_setting(setting_name)
     }
 
-    pub fn get_nested_setting<'c>(
-        &'c self,
-        setting_path: NestedSettingPath<'c>,
-    ) -> Option<&NestedSetting> {
+    pub fn get_nested_setting(&self, setting_path: NestedSettingPath) -> Option<&NestedSetting> {
         let NestedSettingPath {
             section_path,
             setting_name,
@@ -82,7 +79,7 @@ impl<'a> AwsConfigFile<'a> {
         section.get_nested_setting(setting_name, nested_setting_name)
     }
 
-    pub fn set<'b: 'a>(&'a mut self, setting_path: SettingPath<'b>, value: Value<'b>) {
+    pub fn set(&mut self, setting_path: SettingPath, value: Value) {
         let section = match self.0.get_section_mut(
             &setting_path.section_path.section_type,
             setting_path.section_path.section_name.as_ref(),
@@ -95,7 +92,7 @@ impl<'a> AwsConfigFile<'a> {
     }
 }
 
-impl<'a> Display for AwsConfigFile<'a> {
+impl Display for AwsConfigFile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }

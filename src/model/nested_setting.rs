@@ -8,16 +8,16 @@ use std::fmt::Display;
 /// Since the AWS config file is not recursive, we have this separate type to represent the nested item
 /// to avoid defining an unnecessary recursive type.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct NestedSetting<'a> {
-    pub(crate) setting_name: SettingName<'a>,
-    pub(crate) value: Value<'a>,
-    pub(crate) equal: Equal<'a>,
-    pub(crate) leading_spaces: Indent<'a>,
-    pub(crate) whitespace: Whitespace<'a>,
+pub struct NestedSetting {
+    pub(crate) setting_name: SettingName,
+    pub(crate) value: Value,
+    pub(crate) equal: Equal,
+    pub(crate) leading_spaces: Indent,
+    pub(crate) whitespace: Whitespace,
 }
 
-impl<'a> NestedSetting<'a> {
-    pub fn name(&self) -> &SettingName<'a> {
+impl NestedSetting {
+    pub fn name(&self) -> &SettingName {
         &self.setting_name
     }
 
@@ -26,7 +26,7 @@ impl<'a> NestedSetting<'a> {
     }
 }
 
-impl<'a> Display for NestedSetting<'a> {
+impl Display for NestedSetting {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -36,7 +36,7 @@ impl<'a> Display for NestedSetting<'a> {
     }
 }
 
-impl<'a> Parsable<'a> for NestedSetting<'a> {
+impl<'a> Parsable<'a> for NestedSetting {
     type Output = Self;
 
     fn parse(input: &'a str) -> ParserOutput<'a, Self::Output> {

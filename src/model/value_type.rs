@@ -6,12 +6,12 @@ use nom::{combinator::opt, multi::many1};
 use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub enum ValueType<'a> {
-    Single(Value<'a>),
-    Nested(NestedSettings<'a>),
+pub enum ValueType {
+    Single(Value),
+    Nested(NestedSettings),
 }
 
-impl<'a> Display for ValueType<'a> {
+impl Display for ValueType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             ValueType::Single(single) => write!(f, "{single}"),
@@ -20,7 +20,7 @@ impl<'a> Display for ValueType<'a> {
     }
 }
 
-impl<'a> Parsable<'a> for ValueType<'a> {
+impl<'a> Parsable<'a> for ValueType {
     type Output = Self;
 
     fn parse(input: &'a str) -> crate::lexer::ParserOutput<'a, Self::Output> {

@@ -7,15 +7,15 @@ use std::{
 
 /// Represents a setting in its entirety, including indentation, its name and value, and a comment
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Setting<'a> {
-    pub(crate) setting_name: SettingName<'a>,
-    pub(crate) value: ValueType<'a>,
-    pub(crate) equal: Equal<'a>,
-    pub(crate) leading_spaces: Indent<'a>,
+pub struct Setting {
+    pub(crate) setting_name: SettingName,
+    pub(crate) value: ValueType,
+    pub(crate) equal: Equal,
+    pub(crate) leading_spaces: Indent,
 }
 
-impl<'a> Setting<'a> {
-    pub fn new(setting_name: SettingName<'a>, value: ValueType<'a>) -> Self {
+impl Setting {
+    pub fn new(setting_name: SettingName, value: ValueType) -> Self {
         Self {
             setting_name,
             value,
@@ -23,7 +23,7 @@ impl<'a> Setting<'a> {
             leading_spaces: Indent::default(),
         }
     }
-    pub fn name(&self) -> &SettingName<'a> {
+    pub fn name(&self) -> &SettingName {
         &self.setting_name
     }
 
@@ -36,7 +36,7 @@ impl<'a> Setting<'a> {
     }
 }
 
-impl<'a> Display for Setting<'a> {
+impl Display for Setting {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -46,7 +46,7 @@ impl<'a> Display for Setting<'a> {
     }
 }
 
-impl<'a> Parsable<'a> for Setting<'a> {
+impl<'a> Parsable<'a> for Setting {
     type Output = Self;
 
     fn parse(input: &'a str) -> ParserOutput<'a, Self::Output> {
