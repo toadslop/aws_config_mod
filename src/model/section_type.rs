@@ -11,16 +11,29 @@ pub enum SectionType<'a> {
     Profile,
     SsoSession,
     Services,
+    Plugins,
+    Preview,
     Other(&'a str),
+}
+
+impl<'a> SectionType<'a> {
+    const PROFILE: &'static str = "profile";
+    const DEFAULT: &'static str = "default";
+    const SSO_SESSION: &'static str = "sso-session";
+    const SERVICES: &'static str = "services";
+    const PLUGINS: &'static str = "plugins";
+    const PREVIEW: &'static str = "preview";
 }
 
 impl<'a> Display for SectionType<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let as_str = match self {
-            SectionType::Profile => "profile",
-            SectionType::Default => "default",
-            SectionType::SsoSession => "sso-session",
-            SectionType::Services => "services",
+            SectionType::Profile => Self::PROFILE,
+            SectionType::Default => Self::DEFAULT,
+            SectionType::SsoSession => Self::SSO_SESSION,
+            SectionType::Services => Self::SERVICES,
+            SectionType::Plugins => Self::PLUGINS,
+            SectionType::Preview => Self::PREVIEW,
             SectionType::Other(other) => other,
         };
 
@@ -33,10 +46,12 @@ impl<'a> Parsable<'a> for SectionType<'a> {
 
     fn parse(input: &'a str) -> ParserOutput<'a, Self::Output> {
         alt((
-            map(tag("profile"), |_| Self::Profile),
-            map(tag("default"), |_| Self::Default),
-            map(tag("sso-session"), |_| Self::SsoSession),
-            map(tag("services"), |_| Self::Services),
+            map(tag(Self::PROFILE), |_| Self::Profile),
+            map(tag(Self::DEFAULT), |_| Self::Default),
+            map(tag(Self::SSO_SESSION), |_| Self::SsoSession),
+            map(tag(Self::SERVICES), |_| Self::Services),
+            map(tag(Self::PLUGINS), |_| Self::Plugins),
+            map(tag(Self::PREVIEW), |_| Self::Preview),
             map(alphanumeric1, Self::Other),
         ))(input)
     }

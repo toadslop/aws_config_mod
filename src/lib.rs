@@ -18,7 +18,10 @@ mod model;
 pub use error::Error;
 use lexer::Parsable;
 use model::ConfigFile;
-pub use model::{Entry, Section, Setting, SubsectionSetting, Value, Whitespace};
+pub use model::{
+    ConfigPath, Entry, Section, SectionName, SectionPath, SectionType, Setting, SettingName,
+    SubsectionSetting, Value,
+};
 use nom::error::VerboseError;
 use std::fmt::Display;
 
@@ -27,6 +30,7 @@ use std::fmt::Display;
 /// ## Pending Features
 ///
 /// - Load the config file automatically, either from an environment variable or from the default location
+/// - Handle more type-specific info
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AwsConfigFile<'a>(ConfigFile<'a>);
 
@@ -41,6 +45,15 @@ impl<'a> AwsConfigFile<'a> {
     /// Return the [AwsConfigFile] to its [String] format. This function simply wraps the [Display] implementation.
     pub fn serialize(&self) -> String {
         self.to_string()
+    }
+
+    pub fn get_section(&self, config_path: SectionPath) -> Option<&Section> {
+        let SectionPath {
+            section_type,
+            section_name,
+        } = config_path;
+
+        self.0.get_section(&section_type, section_name.as_ref())
     }
 }
 

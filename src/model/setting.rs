@@ -7,11 +7,11 @@ use std::fmt::Display;
 /// Represents a setting in its entirety, including indentation, its name and value, and a comment
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Setting<'a> {
-    pub setting_name: SettingName<'a>,
-    pub value: Value<'a>,
-    equal: Equal<'a>,
-    pub leading_spaces: Indent<'a>,
-    pub whitespace: Whitespace<'a>,
+    pub(crate) setting_name: SettingName<'a>,
+    pub(crate) value: Value<'a>,
+    pub(crate) equal: Equal<'a>,
+    pub(crate) leading_spaces: Indent<'a>,
+    pub(crate) whitespace: Whitespace<'a>,
 }
 
 impl<'a> Display for Setting<'a> {

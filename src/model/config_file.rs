@@ -1,4 +1,4 @@
-use super::file_content::FileContent;
+use super::{file_content::FileContent, Section, SectionName, SectionType};
 use crate::lexer::Parsable;
 use nom::{combinator::eof, error::VerboseError, multi::many_till, IResult};
 use std::fmt::Display;
@@ -8,7 +8,28 @@ use std::fmt::Display;
 pub struct ConfigFile<'a> {
     /// Represents the content of the file. The content includes the sections of the config
     /// as well as full-line whitespace, which includes comments
-    pub content: Vec<FileContent<'a>>,
+    pub(crate) content: Vec<FileContent<'a>>,
+}
+
+impl<'a> ConfigFile<'a> {
+    pub(crate) fn get_section(
+        &self,
+        section_type: &SectionType,
+        section_name: Option<&SectionName>,
+    ) -> Option<&Section<'a>> {
+        self.content.iter().find_map(|content| match content {
+            FileContent::Whitespace(_) => None,
+            FileContent::Section(section) => {
+                if section.header.section_type == *section_type
+                    && section.header.section_name.as_ref() == section_name
+                {
+                    Some(section)
+                } else {
+                    None
+                }
+            }
+        })
+    }
 }
 
 impl<'a> Display for ConfigFile<'a> {
@@ -37,10 +58,9 @@ impl<'a> Parsable<'a> for ConfigFile<'a> {
 
 #[cfg(test)]
 mod test {
-    use std::ops::Deref;
-
     use super::ConfigFile;
     use crate::{lexer::Parsable, model::file_content::FileContent};
+    use std::ops::Deref;
 
     const SAMPLE_CONFIG_FILE: &str = r#"
 # I am a leading comment
@@ -59,6 +79,21 @@ dynamodb =
 
 "#;
 
+    const SAMPLE_CONFIG_FILE_2: &str = r#"
+[profile A]
+credential_source = Ec2InstanceMetadata
+endpoint_url = https://profile-a-endpoint.aws/
+
+[profile B]
+source_profile = A
+role_arn = arn:aws:iam::123456789012:role/roleB
+services = profileB
+
+[services profileB]
+ec2 = 
+  endpoint_url = https://profile-b-ec2-endpoint.aws
+"#;
+
     const EMPTY_CONFIG: &str = r#" "#;
 
     #[test]
@@ -70,7 +105,7 @@ dynamodb =
 
         let first_newline = sections.next().unwrap();
         match first_newline {
-            FileContent::Comment(comment) => {
+            FileContent::Whitespace(comment) => {
                 assert_eq!(comment.deref(), &"\n")
             }
             FileContent::Section(_) => panic!("Should be a comment"),
@@ -78,7 +113,7 @@ dynamodb =
         let leading_comment = sections.next().unwrap();
 
         match leading_comment {
-            FileContent::Comment(comment) => {
+            FileContent::Whitespace(comment) => {
                 assert_eq!(comment.deref(), &"# I am a leading comment\n")
             }
             FileContent::Section(_) => panic!("Should be a comment"),
@@ -88,6 +123,28 @@ dynamodb =
 
         let as_string = config.to_string();
         assert_eq!(as_string, SAMPLE_CONFIG_FILE)
+    }
+
+    #[test]
+    fn parses_sample_config2() {
+        let (next, config) = ConfigFile::parse(SAMPLE_CONFIG_FILE_2).expect("Should be valid");
+        assert!(next.is_empty());
+
+        let mut sections = config.content.iter();
+
+        let first_newline = sections.next().unwrap();
+        match first_newline {
+            FileContent::Whitespace(comment) => {
+                assert_eq!(comment.deref(), &"\n")
+            }
+            FileContent::Section(_) => panic!("Should be a comment"),
+        }
+        let _ = sections.next().unwrap();
+
+        // TODO: finish this test
+
+        let as_string = config.to_string();
+        assert_eq!(as_string, SAMPLE_CONFIG_FILE_2)
     }
 
     #[test]

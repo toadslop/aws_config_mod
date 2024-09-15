@@ -6,10 +6,10 @@ use std::fmt::Display;
 /// Represents a setting that has nested sub-settings.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Hash)]
 pub struct SubsectionSetting<'a> {
-    pub setting_name: SettingName<'a>,
-    equal: Equal<'a>,
-    pub whitespace: Whitespace<'a>,
-    pub sub_settings: Vec<Setting<'a>>,
+    pub(crate) setting_name: SettingName<'a>,
+    pub(crate) equal: Equal<'a>,
+    pub(crate) whitespace: Whitespace<'a>,
+    pub(crate) sub_settings: Vec<Setting<'a>>,
 }
 
 impl<'a> Display for SubsectionSetting<'a> {

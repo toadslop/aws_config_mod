@@ -1,4 +1,4 @@
-use super::{setting::Setting, subsection_setting::SubsectionSetting};
+use super::{setting::Setting, subsection_setting::SubsectionSetting, SettingName};
 use crate::lexer::{Parsable, ParserOutput};
 use std::fmt::Display;
 
@@ -11,6 +11,22 @@ pub enum Entry<'a> {
 
     /// A setting with nested sub-settings
     WithSubsettings(SubsectionSetting<'a>),
+}
+
+impl<'a> Entry<'a> {
+    pub fn key(&self) -> &SettingName {
+        match self {
+            Entry::Single(single) => &single.setting_name,
+            Entry::WithSubsettings(sub) => &sub.setting_name,
+        }
+    }
+
+    pub fn has_subsettings(&self) -> bool {
+        match self {
+            Entry::Single(_) => false,
+            Entry::WithSubsettings(_) => true,
+        }
+    }
 }
 
 impl<'a> Display for Entry<'a> {

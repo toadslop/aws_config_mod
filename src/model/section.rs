@@ -1,4 +1,4 @@
-use super::{entry::Entry, header::Header};
+use super::{entry::Entry, header::Header, SectionName, SectionType};
 use crate::lexer::{Parsable, ParserOutput};
 use nom::multi::many0;
 use std::fmt::Display;
@@ -6,8 +6,22 @@ use std::fmt::Display;
 /// Represents an entire section, including the section type, the profile name, and all of the settings
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default, Hash)]
 pub struct Section<'a> {
-    pub header: Header<'a>,
-    pub entries: Vec<Entry<'a>>,
+    pub(crate) header: Header<'a>,
+    pub(crate) entries: Vec<Entry<'a>>,
+}
+
+impl<'a> Section<'a> {
+    pub fn get_type(&self) -> &SectionType {
+        &self.header.section_type
+    }
+
+    pub fn get_name(&self) -> Option<&SectionName> {
+        self.header.section_name.as_ref()
+    }
+
+    pub fn settings(&self) -> &[Entry<'a>] {
+        &self.entries
+    }
 }
 
 impl<'a> Display for Section<'a> {

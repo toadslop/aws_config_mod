@@ -8,15 +8,15 @@ use std::{fmt::Display, ops::Deref};
 /// Represents the custom profile name associated with a section. In other words, if we see
 /// [profile dev], then 'dev' is the profile name
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Default, Hash)]
-pub struct HeadingName<'a>(&'a str);
+pub struct SectionName<'a>(&'a str);
 
-impl<'a> Display for HeadingName<'a> {
+impl<'a> Display for SectionName<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }
 }
 
-impl<'a> Deref for HeadingName<'a> {
+impl<'a> Deref for SectionName<'a> {
     type Target = &'a str;
 
     fn deref(&self) -> &Self::Target {
@@ -24,7 +24,7 @@ impl<'a> Deref for HeadingName<'a> {
     }
 }
 
-impl<'a> Parsable<'a> for HeadingName<'a> {
+impl<'a> Parsable<'a> for SectionName<'a> {
     type Output = Self;
 
     fn parse(input: &'a str) -> ParserOutput<'a, Self::Output> {
