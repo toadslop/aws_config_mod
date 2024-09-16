@@ -2,20 +2,20 @@ use super::{nested_setting::NestedSetting, whitespace::Whitespace};
 use std::{fmt::Display, ops::Deref};
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash, PartialOrd, Ord)]
-pub struct NestedSettings<'a> {
-    pub(crate) prev_line_whitespace: Whitespace<'a>,
-    pub(crate) settings: Vec<NestedSetting<'a>>,
+pub struct NestedSettings {
+    pub(crate) prev_line_whitespace: Whitespace,
+    pub(crate) settings: Vec<NestedSetting>,
 }
 
-impl<'a> Deref for NestedSettings<'a> {
-    type Target = Vec<NestedSetting<'a>>;
+impl Deref for NestedSettings {
+    type Target = Vec<NestedSetting>;
 
     fn deref(&self) -> &Self::Target {
         &self.settings
     }
 }
 
-impl<'a> Display for NestedSettings<'a> {
+impl Display for NestedSettings {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,

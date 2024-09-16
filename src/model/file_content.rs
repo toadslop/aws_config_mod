@@ -4,15 +4,15 @@ use std::fmt::Display;
 
 /// Represents either a line containing only whitespace (or a comment), or a complete section.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub(crate) enum FileContent<'a> {
+pub(crate) enum FileContent {
     /// A line of whitespace, potentially including a comment
-    Whitespace(Whitespace<'a>),
+    Whitespace(Whitespace),
 
     /// A complete section of a config file
-    Section(Section<'a>),
+    Section(Section),
 }
 
-impl<'a> Display for FileContent<'a> {
+impl Display for FileContent {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             FileContent::Whitespace(comment) => write!(f, "{comment}"),
@@ -21,7 +21,7 @@ impl<'a> Display for FileContent<'a> {
     }
 }
 
-impl<'a> Parsable<'a> for FileContent<'a> {
+impl<'a> Parsable<'a> for FileContent {
     type Output = Self;
 
     fn parse(input: &'a str) -> ParserOutput<'a, Self::Output> {

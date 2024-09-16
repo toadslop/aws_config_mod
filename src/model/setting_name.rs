@@ -6,29 +6,41 @@ use nom::{
 use std::{fmt::Display, ops::Deref};
 
 /// Represents the name of a setting; in other words, the part that comes before the '=' sign.
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Hash)]
-pub struct SettingName<'a>(&'a str);
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone)]
+pub struct SettingName(String);
 
-impl<'a> Display for SettingName<'a> {
+impl PartialEq<str> for SettingName {
+    fn eq(&self, other: &str) -> bool {
+        self.0 == other
+    }
+}
+
+impl PartialEq<SettingName> for str {
+    fn eq(&self, other: &SettingName) -> bool {
+        self == other.0
+    }
+}
+
+impl Display for SettingName {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }
 }
 
-impl<'a> Deref for SettingName<'a> {
-    type Target = &'a str;
+impl Deref for SettingName {
+    type Target = str;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl<'a> Parsable<'a> for SettingName<'a> {
+impl<'a> Parsable<'a> for SettingName {
     type Output = Self;
 
     fn parse(input: &'a str) -> ParserOutput<'a, Self::Output> {
         let (input, setting_name) = recognize(many0_count(alt((alphanumeric1, tag("_")))))(input)?;
-        Ok((input, Self(setting_name)))
+        Ok((input, Self(setting_name.to_string())))
     }
 }
 

@@ -1,18 +1,29 @@
 use super::{
     header::Header, nested_setting::NestedSetting, SectionName, SectionType, Setting, SettingName,
+    Value, ValueType,
 };
 use crate::lexer::{Parsable, ParserOutput};
 use nom::multi::many0;
-use std::fmt::Display;
+use std::{
+    fmt::{Debug, Display},
+    hash::Hash,
+};
 
 /// Represents an entire section, including the section type, the profile name, and all of the settings
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default, Hash)]
-pub struct Section<'a> {
-    pub(crate) header: Header<'a>,
-    pub(crate) settings: Vec<Setting<'a>>,
+pub struct Section {
+    pub(crate) header: Header,
+    pub(crate) settings: Vec<Setting>,
 }
 
-impl<'a> Section<'a> {
+impl Section {
+    pub fn new(header: Header) -> Self {
+        Self {
+            header,
+            settings: Vec::new(),
+        }
+    }
+
     pub fn get_type(&self) -> &SectionType {
         &self.header.section_type
     }
@@ -21,20 +32,26 @@ impl<'a> Section<'a> {
         self.header.section_name.as_ref()
     }
 
-    pub fn settings(&self) -> &[Setting<'a>] {
+    pub fn settings(&self) -> &[Setting] {
         &self.settings
     }
 
-    pub fn get_setting(&self, setting_name: SettingName) -> Option<&Setting> {
+    pub fn get_setting(&self, setting_name: &SettingName) -> Option<&Setting> {
         self.settings
             .iter()
-            .find(|setting| *setting.name() == setting_name)
+            .find(|setting| setting.name() == setting_name)
+    }
+
+    pub fn get_setting_mut(&mut self, setting_name: &SettingName) -> Option<&mut Setting> {
+        self.settings
+            .iter_mut()
+            .find(|setting| setting.name() == setting_name)
     }
 
     pub fn get_nested_setting(
         &self,
-        setting_name: SettingName,
-        nested_setting_name: SettingName,
+        setting_name: &SettingName,
+        nested_setting_name: &SettingName,
     ) -> Option<&NestedSetting> {
         let setting = self.get_setting(setting_name)?;
 
@@ -42,12 +59,22 @@ impl<'a> Section<'a> {
             super::ValueType::Single(_) => None,
             super::ValueType::Nested(nested) => nested
                 .iter()
-                .find(|setting| *setting.name() == nested_setting_name),
+                .find(|setting| setting.name() == nested_setting_name),
+        }
+    }
+
+    pub fn set(&mut self, setting_name: SettingName, value: Value) {
+        if let Some(setting) = self.get_setting_mut(&setting_name) {
+            setting.value = ValueType::Single(value);
+        } else {
+            let value = ValueType::Single(value);
+            let setting = Setting::new(setting_name, value);
+            self.settings.push(setting)
         }
     }
 }
 
-impl<'a> Display for Section<'a> {
+impl Display for Section {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -61,7 +88,7 @@ impl<'a> Display for Section<'a> {
     }
 }
 
-impl<'a> Parsable<'a> for Section<'a> {
+impl<'a> Parsable<'a> for Section {
     type Output = Self;
 
     fn parse(input: &'a str) -> ParserOutput<'a, Self::Output> {
@@ -96,7 +123,7 @@ dynamodb =
         let settings = section.settings;
         let first = &settings[0];
 
-        assert_eq!(**first.name(), "region");
+        assert_eq!(**first.name(), *"region");
         match first.value() {
             crate::ValueType::Single(_) => (),
             crate::ValueType::Nested(_) => panic!("Should not be nested"),
@@ -116,14 +143,14 @@ dynamodb =
         let settings = &section.settings;
         let first = &settings[0];
 
-        assert_eq!(**first.name(), "ec2");
+        assert_eq!(**first.name(), *"ec2");
         match first.value() {
             crate::ValueType::Single(_) => panic!("Should not be single"),
             crate::ValueType::Nested(nested) => nested,
         };
 
         let second = &settings[1];
-        assert_eq!(**second.name(), "dynamodb");
+        assert_eq!(**second.name(), *"dynamodb");
         match second.value() {
             crate::ValueType::Single(_) => panic!("Should not be single"),
             crate::ValueType::Nested(nested) => nested,

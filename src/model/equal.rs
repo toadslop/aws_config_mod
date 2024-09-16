@@ -6,23 +6,29 @@ use std::{fmt::Display, ops::Deref};
 /// This is an internal type used mainly to help return a file to its original state,
 /// even preserving unusual space.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Equal<'a>(&'a str);
+pub struct Equal(String);
 
-impl<'a> Display for Equal<'a> {
+impl Default for Equal {
+    fn default() -> Self {
+        Self(" = ".to_string())
+    }
+}
+
+impl Display for Equal {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }
 }
 
-impl<'a> Deref for Equal<'a> {
-    type Target = &'a str;
+impl Deref for Equal {
+    type Target = str;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl<'a> Parsable<'a> for Equal<'a> {
+impl<'a> Parsable<'a> for Equal {
     type Output = Self;
 
     fn parse(input: &'a str) -> ParserOutput<'a, Self::Output> {
@@ -30,6 +36,6 @@ impl<'a> Parsable<'a> for Equal<'a> {
         let (next, eq) = tag("=")(next)?;
         let (next, trailing_ws) = space0(next)?;
         let equal = &input[0..(leading_ws.len() + eq.len() + trailing_ws.len())];
-        Ok((next, Self(equal)))
+        Ok((next, Self(equal.to_string())))
     }
 }

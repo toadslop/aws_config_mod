@@ -9,23 +9,29 @@ use std::{fmt::Display, ops::Deref};
 
 /// Represents meaningless whitespace, including comments. Does not represent meaningful indentation.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Default, Hash)]
-pub(crate) struct Whitespace<'a>(pub(crate) &'a str);
+pub(crate) struct Whitespace(String);
 
-impl<'a> Deref for Whitespace<'a> {
-    type Target = &'a str;
+impl Deref for Whitespace {
+    type Target = str;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl<'a> Display for Whitespace<'a> {
+impl PartialEq<str> for Whitespace {
+    fn eq(&self, other: &str) -> bool {
+        self.0 == other
+    }
+}
+
+impl Display for Whitespace {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }
 }
 
-impl<'a> Parsable<'a> for Whitespace<'a> {
+impl<'a> Parsable<'a> for Whitespace {
     type Output = Self;
 
     fn parse(input: &'a str) -> ParserOutput<'a, Self::Output> {
@@ -33,9 +39,9 @@ impl<'a> Parsable<'a> for Whitespace<'a> {
         let (next, maybe_comment) = opt(pair(hash, not_line_ending))(next)?;
         let (hash, rest) = maybe_comment.unwrap_or_default();
         let (next, newline) = alt((newline, crlf, eof))(next)?;
-        let comment = &input[0..(leading_spaces.len() + hash.len() + rest.len() + newline.len())];
-
-        Ok((next, Whitespace(comment)))
+        let whitespace =
+            &input[0..(leading_spaces.len() + hash.len() + rest.len() + newline.len())];
+        Ok((next, Whitespace(whitespace.to_string())))
     }
 }
 
@@ -51,7 +57,7 @@ mod test {
         let (rest, com) = Whitespace::parse(comment).expect("Should be ok");
 
         assert!(rest.is_empty());
-        assert_eq!(*com, comment);
+        assert_eq!(com, *comment);
         assert_eq!(&com.to_string(), comment)
     }
 
@@ -62,7 +68,7 @@ mod test {
         let (rest, com) = Whitespace::parse(comment).expect("Should be ok");
 
         assert!(rest.is_empty());
-        assert_eq!(*com, comment);
+        assert_eq!(com, *comment);
         assert_eq!(&com.to_string(), comment)
     }
 
@@ -73,7 +79,7 @@ mod test {
         let (rest, com) = Whitespace::parse(comment).expect("Should be ok");
 
         assert!(rest.is_empty());
-        assert_eq!(*com, comment);
+        assert_eq!(com, *comment);
         assert_eq!(&com.to_string(), comment)
     }
 
@@ -84,7 +90,7 @@ mod test {
         let (rest, com) = Whitespace::parse(comment).expect("Should be ok");
 
         assert!(rest.is_empty());
-        assert_eq!(*com, comment);
+        assert_eq!(com, *comment);
         assert_eq!(&com.to_string(), comment)
     }
 
@@ -95,7 +101,21 @@ mod test {
         let (rest, com) = Whitespace::parse(comment).expect("Should be ok");
 
         assert!(rest.is_empty());
-        assert_eq!(*com, comment);
+        assert_eq!(com, *comment);
         assert_eq!(&com.to_string(), comment)
     }
+
+    //     #[test]
+    //     fn multilines_of_whitespace() {
+    //         let comment = r#"
+    // # hello comment
+    //            # more comment stuff
+    //         "#;
+
+    //         let (rest, com) = Whitespace::parse(comment).expect("Should be ok");
+
+    //         assert!(rest.is_empty());
+    //         assert_eq!(com, *comment);
+    //         assert_eq!(&com.to_string(), comment)
+    //     }
 }
