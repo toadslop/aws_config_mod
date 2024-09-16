@@ -48,16 +48,16 @@ impl AwsConfigFile {
         self.to_string()
     }
 
-    pub fn get_section(&self, config_path: SectionPath) -> Option<&Section> {
+    pub fn get_section(&self, config_path: &SectionPath) -> Option<&Section> {
         let SectionPath {
             section_type,
             section_name,
         } = config_path;
 
-        self.0.get_section(&section_type, section_name.as_ref())
+        self.0.get_section(section_type, section_name.as_ref())
     }
 
-    pub fn get_setting(&self, setting_path: SettingPath) -> Option<&Setting> {
+    pub fn get_setting(&self, setting_path: &SettingPath) -> Option<&Setting> {
         let SettingPath {
             section_path,
             setting_name,
@@ -68,7 +68,7 @@ impl AwsConfigFile {
         section.get_setting(setting_name)
     }
 
-    pub fn get_nested_setting(&self, setting_path: NestedSettingPath) -> Option<&NestedSetting> {
+    pub fn get_nested_setting(&self, setting_path: &NestedSettingPath) -> Option<&NestedSetting> {
         let NestedSettingPath {
             section_path,
             setting_name,

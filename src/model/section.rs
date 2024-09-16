@@ -36,16 +36,22 @@ impl Section {
         &self.settings
     }
 
-    pub fn get_setting(&self, setting_name: SettingName) -> Option<&Setting> {
+    pub fn get_setting(&self, setting_name: &SettingName) -> Option<&Setting> {
         self.settings
             .iter()
-            .find(|setting| *setting.name() == setting_name)
+            .find(|setting| setting.name() == setting_name)
+    }
+
+    pub fn get_setting_mut(&mut self, setting_name: &SettingName) -> Option<&mut Setting> {
+        self.settings
+            .iter_mut()
+            .find(|setting| setting.name() == setting_name)
     }
 
     pub fn get_nested_setting(
         &self,
-        setting_name: SettingName,
-        nested_setting_name: SettingName,
+        setting_name: &SettingName,
+        nested_setting_name: &SettingName,
     ) -> Option<&NestedSetting> {
         let setting = self.get_setting(setting_name)?;
 
@@ -53,14 +59,18 @@ impl Section {
             super::ValueType::Single(_) => None,
             super::ValueType::Nested(nested) => nested
                 .iter()
-                .find(|setting| *setting.name() == nested_setting_name),
+                .find(|setting| setting.name() == nested_setting_name),
         }
     }
 
     pub fn set(&mut self, setting_name: SettingName, value: Value) {
-        let value = ValueType::Single(value);
-        let setting = Setting::new(setting_name, value);
-        self.settings.push(setting)
+        if let Some(setting) = self.get_setting_mut(&setting_name) {
+            setting.value = ValueType::Single(value);
+        } else {
+            let value = ValueType::Single(value);
+            let setting = Setting::new(setting_name, value);
+            self.settings.push(setting)
+        }
     }
 }
 

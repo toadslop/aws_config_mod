@@ -20,7 +20,7 @@ fn can_get_a_section_with_a_string() {
     let config = AwsConfigFile::parse(SAMPLE_FILE).expect("Sample file should be valid");
     let section_path = SectionPath::try_from("profile.A").expect("Should parse");
     let section = config
-        .get_section(section_path)
+        .get_section(&section_path)
         .expect("This section should exist");
 
     let name = section.get_name().expect("Should have a name");
@@ -51,7 +51,7 @@ fn can_get_a_section_with_a_string() {
 fn can_get_a_section_with_a_tuple_of_strings() {
     let config = AwsConfigFile::parse(SAMPLE_FILE).expect("Sample file should be valid");
     let section_path = SectionPath::try_from(("profile", "A")).expect("Should parse");
-    config.get_section(section_path);
+    config.get_section(&section_path);
 }
 
 #[test]
@@ -59,7 +59,7 @@ fn can_get_a_section_with_a_section_type_and_string() {
     let config = AwsConfigFile::parse(SAMPLE_FILE).expect("Sample file should be valid");
     let section_path = SectionPath::try_from((SectionType::Profile, "B")).expect("Should parse");
     config
-        .get_section(section_path)
+        .get_section(&section_path)
         .expect("Section B should exist");
 }
 
@@ -69,7 +69,7 @@ fn can_get_a_nested_section() {
     let section_path =
         SectionPath::try_from((SectionType::Services, "profileB")).expect("Should parse");
     let section = config
-        .get_section(section_path)
+        .get_section(&section_path)
         .expect("Services for profileB should exist");
 
     let setting = section
@@ -99,7 +99,7 @@ fn can_get_a_value_from_path_string() {
     let setting_path = SettingPath::try_from("profile.A.credential_source").expect("Should parse");
 
     let setting = config
-        .get_setting(setting_path)
+        .get_setting(&setting_path)
         .expect("should have the setting");
 
     assert_eq!(setting.name(), "credential_source");
@@ -119,7 +119,7 @@ fn can_get_a_value_from_path_tuple() {
         SettingPath::try_from(("profile", "A", "credential_source")).expect("Should parse");
 
     let setting = config
-        .get_setting(setting_path)
+        .get_setting(&setting_path)
         .expect("should have the setting");
 
     assert_eq!(setting.name(), "credential_source");
@@ -156,12 +156,51 @@ fn can_get_a_value_from_path_tuple() {
 // TODO: values from tuples
 
 #[test]
-fn can_set_a_value() {
+fn can_change_a_value() {
+    const EXPECTED: &str = r#"
+[profile A]
+credential_source = my-new-credential-source
+endpoint_url = https://profile-a-endpoint.aws/
+
+[profile B]
+source_profile = A
+role_arn = arn:aws:iam::123456789012:role/roleB
+services = profileB
+
+[services profileB]
+ec2 = 
+  endpoint_url = https://profile-b-ec2-endpoint.aws
+"#;
     let mut config = AwsConfigFile::parse(SAMPLE_FILE).expect("Sample file should be valid");
 
-    {
-        let setting_path =
-            SettingPath::try_from("profile.A.credential_source").expect("Should parse");
-        config.set(setting_path, Value::from("my-new-credential-source"));
-    }
+    let setting_path = SettingPath::try_from("profile.A.credential_source").expect("Should parse");
+    config.set(setting_path, Value::from("my-new-credential-source"));
+    let stringified = config.to_string();
+    assert_eq!(stringified, EXPECTED)
+}
+
+#[test]
+fn can_add_a_setting_to_existing_section() {
+    const EXPECTED: &str = r#"
+[profile A]
+credential_source = my-new-credential-source
+endpoint_url = https://profile-a-endpoint.aws/
+other_setting = my-other-setting
+
+[profile B]
+source_profile = A
+role_arn = arn:aws:iam::123456789012:role/roleB
+services = profileB
+
+[services profileB]
+ec2 = 
+  endpoint_url = https://profile-b-ec2-endpoint.aws
+"#;
+    let mut config = AwsConfigFile::parse(SAMPLE_FILE).expect("Sample file should be valid");
+    // dbg!(&config);
+    let setting_path = SettingPath::try_from("profile.A.other_setting").expect("Should parse");
+    config.set(setting_path, Value::from("my-other-setting"));
+    let stringified = config.to_string();
+    dbg!(&stringified);
+    assert_eq!(stringified, EXPECTED)
 }

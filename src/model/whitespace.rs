@@ -41,7 +41,6 @@ impl<'a> Parsable<'a> for Whitespace {
         let (next, newline) = alt((newline, crlf, eof))(next)?;
         let whitespace =
             &input[0..(leading_spaces.len() + hash.len() + rest.len() + newline.len())];
-
         Ok((next, Whitespace(whitespace.to_string())))
     }
 }
@@ -105,4 +104,18 @@ mod test {
         assert_eq!(com, *comment);
         assert_eq!(&com.to_string(), comment)
     }
+
+    //     #[test]
+    //     fn multilines_of_whitespace() {
+    //         let comment = r#"
+    // # hello comment
+    //            # more comment stuff
+    //         "#;
+
+    //         let (rest, com) = Whitespace::parse(comment).expect("Should be ok");
+
+    //         assert!(rest.is_empty());
+    //         assert_eq!(com, *comment);
+    //         assert_eq!(&com.to_string(), comment)
+    //     }
 }
