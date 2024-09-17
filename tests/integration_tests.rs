@@ -80,11 +80,13 @@ fn can_get_a_nested_section() {
     assert_eq!(setting.name(), "ec2");
 
     let settings = match setting.value() {
+        // TODO: the whitespace should not be in the public api
         ValueType::Single(_) => panic!("Should be nested"),
         ValueType::Nested(nested) => nested,
     };
 
     let setting = settings
+        .1
         .first()
         .expect("Should have a first nested setting");
 

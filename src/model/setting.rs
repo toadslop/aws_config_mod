@@ -115,7 +115,7 @@ region=us-west-2
             crate::ValueType::Nested(nested) => nested,
         };
 
-        let first = nested.first().expect("Should have a first");
+        let first = nested.1.first().expect("Should have a first");
 
         assert_eq!(first.name(), "endpoint_url");
         assert_eq!(first.value(), "https://profile-b-ec2-endpoint.aws");
@@ -140,7 +140,7 @@ region=us-west-2
             crate::ValueType::Nested(nested) => nested,
         };
 
-        let first = nested.first().expect("Should have a first");
+        let first = nested.1.first().expect("Should have a first");
 
         assert_eq!(first.name(), "endpoint_url");
         assert_eq!(first.value(), "https://profile-b-ec2-endpoint.aws");
@@ -165,7 +165,7 @@ region=us-west-2
             crate::ValueType::Nested(nested) => nested,
         };
 
-        let first = nested.first().expect("Should have a first");
+        let first = nested.1.first().expect("Should have a first");
 
         assert_eq!(first.name(), "endpoint_url");
         assert_eq!(first.value(), "https://profile-b-ec2-endpoint.aws");
@@ -189,7 +189,7 @@ region=us-west-2
             crate::ValueType::Nested(nested) => nested,
         };
 
-        let first = nested.first().expect("Should have a first");
+        let first = nested.1.first().expect("Should have a first");
 
         assert_eq!(first.name(), "endpoint_url");
         assert_eq!(first.value(), "https://profile-b-ec2-endpoint.aws");

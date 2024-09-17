@@ -40,7 +40,9 @@ impl<'a> Parsable<'a> for NestedSetting {
     type Output = Self;
 
     fn parse(input: &'a str) -> ParserOutput<'a, Self::Output> {
+        dbg!("checking the indent", input);
         let (next, leading_spaces) = Indent::parse(input)?;
+        dbg!("found the indent");
         let (next, setting_name) = SettingName::parse(next)?;
         let (next, equal) = Equal::parse(next)?;
         let (next, value) = Value::parse(next)?;

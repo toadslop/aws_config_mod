@@ -59,7 +59,7 @@ impl Section {
 
         match setting.value() {
             super::ValueType::Single(_) => None,
-            super::ValueType::Nested(nested) => nested
+            super::ValueType::Nested((_, nested)) => nested
                 .iter()
                 .find(|setting| setting.name() == nested_setting_name),
         }
@@ -170,6 +170,7 @@ dynamodb =
         let (rest, section) = Section::parse(MULTIPLE_NESTED).expect("Should be valid");
         assert!(rest.is_empty());
         let settings = &section.settings;
+        dbg!(settings);
         let first = &settings[0];
 
         assert_eq!(**first.name(), *"ec2");
