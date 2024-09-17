@@ -1,11 +1,6 @@
 use super::{nested_setting::NestedSetting, Value};
 use crate::lexer::Parsable;
-use nom::{
-    branch::alt,
-    combinator::{map, opt, peek},
-    multi::{many0, many1},
-    Parser,
-};
+use nom::{branch::alt, combinator::map, multi::many0};
 use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]

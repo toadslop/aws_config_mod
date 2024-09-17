@@ -1,12 +1,10 @@
 use crate::lexer::{hash, newline, Parsable, ParserOutput};
 use nom::{
     branch::alt,
-    bytes::complete::tag,
-    character::complete::{char, crlf, not_line_ending, space0},
-    combinator::{eof, not, opt, recognize},
+    character::complete::{crlf, not_line_ending, space0},
+    combinator::{opt, recognize},
     error::VerboseError,
     multi::separated_list0,
-    sequence::pair,
     IResult, Parser,
 };
 use std::{fmt::Display, ops::Deref};
