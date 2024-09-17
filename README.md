@@ -39,4 +39,10 @@ let stringified = config.to_string();
 // Write the content back to your file
 ```
 
+### TODOs
+
+- support for credentials files
+- improved error messages
+- automatic config file loading via standard aws config locations and environment variables
+
 License: MIT OR Apache-2.0

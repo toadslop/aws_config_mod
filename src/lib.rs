@@ -36,6 +36,12 @@
 //! let stringified = config.to_string();
 //! // Write the content back to your file
 //! ```
+//!
+//! ## TODOs
+//!
+//! - support for credentials files
+//! - improved error messages
+//! - automatic config file loading via standard aws config locations and environment variables
 
 mod error;
 mod lexer;
@@ -46,79 +52,3 @@ pub use model::{
     AwsConfigFile, NestedSetting, NestedSettingPath, Section, SectionName, SectionPath,
     SectionType, Setting, SettingName, SettingPath, Value, ValueType,
 };
-
-// Represents an AWS config file -- it does not include the content of a credentials file.
-// Internally it tracks the whitespace so calling [AwsConfigFile::to_string] will reproduce
-// the original whitespace and comments of the file.
-// #[derive(Debug, Clone, PartialEq, Eq)]
-// pub struct AwsConfigFile(ConfigFile);
-
-// impl AwsConfigFile {
-//     /// Given a [str], return it parsed as [AwsConfigFile]
-//     pub fn parse(s: &str) -> Result<Self, nom::Err<VerboseError<&str>>> {
-//         let (_, config_file) = ConfigFile::parse(s)?;
-
-//         Ok(Self(config_file))
-//     }
-
-//     /// Return the [AwsConfigFile] to its [String] format. This function simply wraps the [Display] implementation.
-//     pub fn serialize(&self) -> String {
-//         self.to_string()
-//     }
-
-//     /// Given a [SectionPath], will find and return the [Section] if it exists; otherwise returns [None].
-//     pub fn get_section(&self, config_path: &SectionPath) -> Option<&Section> {
-//         let SectionPath {
-//             section_type,
-//             section_name,
-//         } = config_path;
-
-//         self.0.get_section(section_type, section_name.as_ref())
-//     }
-
-//     /// Given a [SettingPath], locate the given [Setting], if it exists.
-//     pub fn get_setting(&self, setting_path: &SettingPath) -> Option<&Setting> {
-//         let SettingPath {
-//             section_path,
-//             setting_name,
-//         } = setting_path;
-
-//         let section = self.get_section(section_path)?;
-
-//         section.get_setting(setting_name)
-//     }
-
-//     /// Retrieves a [NestedSetting], or a setting contained within another setting, given the [NestedSettingPath]
-//     /// if it exists.
-//     pub fn get_nested_setting(&self, setting_path: &NestedSettingPath) -> Option<&NestedSetting> {
-//         let NestedSettingPath {
-//             section_path,
-//             setting_name,
-//             nested_setting_name,
-//         } = setting_path;
-
-//         let section = self.get_section(section_path)?;
-//         section.get_nested_setting(setting_name, nested_setting_name)
-//     }
-
-//     /// Provided a [SettingPath] and a [Value], locates the desired [Setting] and changes its [Value].
-//     /// If the setting doesn't exist, it will be created. If the [Section] that contains the [Setting]
-//     /// doesn't exist, it will also be created.
-//     pub fn set(&mut self, setting_path: SettingPath, value: Value) {
-//         let section = match self.0.get_section_mut(
-//             &setting_path.section_path.section_type,
-//             &setting_path.section_path.section_name,
-//         ) {
-//             Some(section) => section,
-//             None => self.0.insert_section(&setting_path.section_path),
-//         };
-
-//         section.set(setting_path.setting_name, value);
-//     }
-// }
-
-// impl Display for AwsConfigFile {
-//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-//         write!(f, "{}", self.0)
-//     }
-// }
