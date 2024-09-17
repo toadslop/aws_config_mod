@@ -1,7 +1,8 @@
 use super::{
-    header::Header, whitespace::Whitespace, Section, SectionName, SectionPath, SectionType,
+    header::Header, whitespace::Whitespace, NestedSetting, NestedSettingPath, Section, SectionName,
+    SectionPath, SectionType, Setting, SettingPath, Value,
 };
-use crate::lexer::Parsable;
+use crate::lexer::{to_owned_input, Parsable};
 use nom::{
     combinator::{eof, opt},
     error::VerboseError,
@@ -9,11 +10,11 @@ use nom::{
     sequence::tuple,
     IResult, Parser,
 };
-use std::fmt::Display;
+use std::{fmt::Display, str::FromStr};
 
 /// Represents a complete aws config file, including internal tracking of [Whitespace]
 #[derive(Debug, PartialEq, Eq, Clone, Hash, Default)]
-pub struct ConfigFile {
+pub struct AwsConfigFile {
     /// Whitespace and comments at the head of the file, before the first section
     pub(crate) leading_whitespace: Whitespace,
 
@@ -25,9 +26,75 @@ pub struct ConfigFile {
     pub(crate) trailing_whitespace: Whitespace,
 }
 
-impl ConfigFile {
+impl FromStr for AwsConfigFile {
+    type Err = crate::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::parse(s)
+            .map(|a| a.1)
+            .map_err(to_owned_input)
+            .map_err(crate::Error::from)
+    }
+}
+
+impl AwsConfigFile {
+    /// Return the [AwsConfigFile] to its [String] format. This function simply wraps the [Display] implementation.
+    pub fn serialize(&self) -> String {
+        self.to_string()
+    }
+
+    /// Given a [SectionPath], will find and return the [Section] if it exists; otherwise returns [None].
+    pub fn get_section(&self, config_path: &SectionPath) -> Option<&Section> {
+        let SectionPath {
+            section_type,
+            section_name,
+        } = config_path;
+
+        self.get_section_inner(section_type, section_name.as_ref())
+    }
+
+    /// Given a [SettingPath], locate the given [Setting], if it exists.
+    pub fn get_setting(&self, setting_path: &SettingPath) -> Option<&Setting> {
+        let SettingPath {
+            section_path,
+            setting_name,
+        } = setting_path;
+
+        let section = self.get_section(section_path)?;
+
+        section.get_setting(setting_name)
+    }
+
+    /// Retrieves a [NestedSetting], or a setting contained within another setting, given the [NestedSettingPath]
+    /// if it exists.
+    pub fn get_nested_setting(&self, setting_path: &NestedSettingPath) -> Option<&NestedSetting> {
+        let NestedSettingPath {
+            section_path,
+            setting_name,
+            nested_setting_name,
+        } = setting_path;
+
+        let section = self.get_section(section_path)?;
+        section.get_nested_setting(setting_name, nested_setting_name)
+    }
+
+    /// Provided a [SettingPath] and a [Value], locates the desired [Setting] and changes its [Value].
+    /// If the setting doesn't exist, it will be created. If the [Section] that contains the [Setting]
+    /// doesn't exist, it will also be created.
+    pub fn set(&mut self, setting_path: SettingPath, value: Value) {
+        let section = match self.get_section_mut(
+            &setting_path.section_path.section_type,
+            &setting_path.section_path.section_name,
+        ) {
+            Some(section) => section,
+            None => self.insert_section(&setting_path.section_path),
+        };
+
+        section.set(setting_path.setting_name, value);
+    }
+
     /// Get an immutable reference to a [Section] by its [SectionType] and [SectionName]
-    pub(crate) fn get_section(
+    fn get_section_inner(
         &self,
         section_type: &SectionType,
         section_name: Option<&SectionName>,
@@ -76,7 +143,7 @@ impl ConfigFile {
     }
 }
 
-impl Display for ConfigFile {
+impl Display for AwsConfigFile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -91,7 +158,7 @@ impl Display for ConfigFile {
     }
 }
 
-impl<'a> Parsable<'a> for ConfigFile {
+impl<'a> Parsable<'a> for AwsConfigFile {
     type Output = Self;
 
     fn parse(input: &'a str) -> IResult<&'a str, Self::Output, VerboseError<&'a str>> {
@@ -115,7 +182,7 @@ impl<'a> Parsable<'a> for ConfigFile {
 
 #[cfg(test)]
 mod test {
-    use super::ConfigFile;
+    use super::AwsConfigFile;
     use crate::lexer::Parsable;
     use nom::Finish;
 
@@ -157,7 +224,7 @@ dynamodb =
 
     #[test]
     fn parses_sample_config() {
-        let (next, config) = ConfigFile::parse(SAMPLE_CONFIG_FILE).expect("Should be valid");
+        let (next, config) = AwsConfigFile::parse(SAMPLE_CONFIG_FILE).expect("Should be valid");
         assert!(next.is_empty());
 
         let mut sections = config.sections.iter();
@@ -172,7 +239,7 @@ dynamodb =
 
     #[test]
     fn parses_sample_config2() {
-        let (next, config) = ConfigFile::parse(SAMPLE_CONFIG_FILE_2).expect("Should be valid");
+        let (next, config) = AwsConfigFile::parse(SAMPLE_CONFIG_FILE_2).expect("Should be valid");
         assert!(next.is_empty());
 
         let mut sections = config.sections.iter();
@@ -189,14 +256,14 @@ dynamodb =
 
     #[test]
     fn empty_config_should_pass() {
-        let (next, _) = ConfigFile::parse(EMPTY_CONFIG).expect("Should be valid");
+        let (next, _) = AwsConfigFile::parse(EMPTY_CONFIG).expect("Should be valid");
 
         assert!(next.is_empty())
     }
 
     #[test]
     fn empty_string_is_valid_config() {
-        ConfigFile::parse("").finish().ok().unwrap();
+        AwsConfigFile::parse("").finish().ok().unwrap();
     }
 
     #[test]
@@ -204,6 +271,6 @@ dynamodb =
         let input = r#"
         # some comment
         "#;
-        ConfigFile::parse(input).finish().ok().unwrap();
+        AwsConfigFile::parse(input).finish().ok().unwrap();
     }
 }

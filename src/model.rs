@@ -17,7 +17,7 @@ mod value;
 mod value_type;
 mod whitespace;
 
-pub use config_file::ConfigFile;
+pub use config_file::AwsConfigFile;
 pub use nested_setting::NestedSetting;
 pub use section::Section;
 pub use section_name::SectionName;

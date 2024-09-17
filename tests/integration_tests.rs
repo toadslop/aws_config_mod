@@ -17,7 +17,10 @@ ec2 =
 
 #[test]
 fn can_get_a_section_with_a_string() {
-    let config = AwsConfigFile::parse(SAMPLE_FILE).expect("Sample file should be valid");
+    let config = SAMPLE_FILE
+        .parse::<AwsConfigFile>()
+        .expect("Sample file should be valid");
+
     let section_path = SectionPath::try_from("profile.A").expect("Should parse");
     let section = config
         .get_section(&section_path)
@@ -49,14 +52,18 @@ fn can_get_a_section_with_a_string() {
 
 #[test]
 fn can_get_a_section_with_a_tuple_of_strings() {
-    let config = AwsConfigFile::parse(SAMPLE_FILE).expect("Sample file should be valid");
+    let config = SAMPLE_FILE
+        .parse::<AwsConfigFile>()
+        .expect("Sample file should be valid");
     let section_path = SectionPath::try_from(("profile", "A")).expect("Should parse");
     config.get_section(&section_path);
 }
 
 #[test]
 fn can_get_a_section_with_a_section_type_and_string() {
-    let config = AwsConfigFile::parse(SAMPLE_FILE).expect("Sample file should be valid");
+    let config = SAMPLE_FILE
+        .parse::<AwsConfigFile>()
+        .expect("Sample file should be valid");
     let section_path = SectionPath::try_from((SectionType::Profile, "B")).expect("Should parse");
     config
         .get_section(&section_path)
@@ -65,7 +72,9 @@ fn can_get_a_section_with_a_section_type_and_string() {
 
 #[test]
 fn can_get_a_nested_section() {
-    let config = AwsConfigFile::parse(SAMPLE_FILE).expect("Sample file should be valid");
+    let config = SAMPLE_FILE
+        .parse::<AwsConfigFile>()
+        .expect("Sample file should be valid");
     let section_path =
         SectionPath::try_from((SectionType::Services, "profileB")).expect("Should parse");
     let section = config
@@ -95,7 +104,9 @@ fn can_get_a_nested_section() {
 
 #[test]
 fn can_get_a_value_from_path_string() {
-    let config = AwsConfigFile::parse(SAMPLE_FILE).expect("Sample file should be valid");
+    let config = SAMPLE_FILE
+        .parse::<AwsConfigFile>()
+        .expect("Sample file should be valid");
     let setting_path = SettingPath::try_from("profile.A.credential_source").expect("Should parse");
 
     let setting = config
@@ -114,7 +125,9 @@ fn can_get_a_value_from_path_string() {
 
 #[test]
 fn can_get_a_value_from_path_tuple() {
-    let config = AwsConfigFile::parse(SAMPLE_FILE).expect("Sample file should be valid");
+    let config = SAMPLE_FILE
+        .parse::<AwsConfigFile>()
+        .expect("Sample file should be valid");
     let setting_path =
         SettingPath::try_from(("profile", "A", "credential_source")).expect("Should parse");
 
@@ -171,7 +184,9 @@ services = profileB
 ec2 = 
   endpoint_url = https://profile-b-ec2-endpoint.aws
 "#;
-    let mut config = AwsConfigFile::parse(SAMPLE_FILE).expect("Sample file should be valid");
+    let mut config = SAMPLE_FILE
+        .parse::<AwsConfigFile>()
+        .expect("Sample file should be valid");
 
     let setting_path = SettingPath::try_from("profile.A.credential_source").expect("Should parse");
     config.set(setting_path, Value::from("my-new-credential-source"));
@@ -196,7 +211,9 @@ services = profileB
 ec2 = 
   endpoint_url = https://profile-b-ec2-endpoint.aws
 "#;
-    let mut config = AwsConfigFile::parse(SAMPLE_FILE).expect("Sample file should be valid");
+    let mut config = SAMPLE_FILE
+        .parse::<AwsConfigFile>()
+        .expect("Sample file should be valid");
 
     let setting_path = SettingPath::try_from("profile.A.other_setting").expect("Should parse");
     config.set(setting_path, Value::from("my-other-setting"));

@@ -5,7 +5,7 @@ use thiserror::Error;
 /// Custom error type. Currently incomplete but will eventually feature better
 /// parse-error diagnostics
 #[derive(Debug, Error)]
-pub enum Error<'a> {
+pub enum Error {
     #[error("Failed to parse config file:\n\t{0}")]
-    ParseError(nom::Err<nom::error::VerboseError<&'a str>>),
+    ParseError(#[from] nom::Err<nom::error::VerboseError<String>>),
 }
