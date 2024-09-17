@@ -1,12 +1,12 @@
-use super::{nested_setting::NestedSetting, Value};
+use super::{nested_setting::NestedSetting, whitespace::Whitespace, Value};
 use crate::lexer::Parsable;
-use nom::{branch::alt, character::complete::line_ending, combinator::map, multi::many0, Parser};
+use nom::{branch::alt, combinator::map, multi::many0, Parser};
 use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum ValueType {
     Single(Value),
-    Nested((String, Vec<NestedSetting>)),
+    Nested((Whitespace, Vec<NestedSetting>)),
 }
 
 impl Display for ValueType {
@@ -29,17 +29,11 @@ impl<'a> Parsable<'a> for ValueType {
     type Output = Self;
 
     fn parse(input: &'a str) -> crate::lexer::ParserOutput<'a, Self::Output> {
-        // let it = map(many0(NestedSetting::parse), Self::Nested)(input)?;
-        // let it = map(
-        //     line_ending.and(map(many0(NestedSetting::parse), Self::Nested)),
-        //     |res| res.1,
-        // )(input)?;
-
         alt((
             map(Value::parse, Self::Single),
             map(
-                line_ending.and(many0(NestedSetting::parse)),
-                |(newline, nested)| Self::Nested((newline.to_string(), nested)),
+                Whitespace::parse.and(many0(NestedSetting::parse)),
+                Self::Nested,
             ),
         ))(input)
     }

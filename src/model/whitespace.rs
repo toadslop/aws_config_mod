@@ -11,7 +11,7 @@ use std::{fmt::Display, ops::Deref};
 
 /// Represents meaningless whitespace, including comments. Does not represent meaningful indentation.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Default, Hash)]
-pub(crate) struct Whitespace(pub(crate) String);
+pub struct Whitespace(pub(crate) String); // TODO: return this to private
 
 impl Deref for Whitespace {
     type Target = str;
