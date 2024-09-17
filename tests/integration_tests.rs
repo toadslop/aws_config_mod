@@ -197,10 +197,9 @@ ec2 =
   endpoint_url = https://profile-b-ec2-endpoint.aws
 "#;
     let mut config = AwsConfigFile::parse(SAMPLE_FILE).expect("Sample file should be valid");
-    // dbg!(&config);
+
     let setting_path = SettingPath::try_from("profile.A.other_setting").expect("Should parse");
     config.set(setting_path, Value::from("my-other-setting"));
     let stringified = config.to_string();
-    dbg!(&stringified);
     assert_eq!(stringified, EXPECTED)
 }

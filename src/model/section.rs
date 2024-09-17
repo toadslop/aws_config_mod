@@ -1,6 +1,6 @@
 use super::{
-    header::Header, nested_setting::NestedSetting, SectionName, SectionType, Setting, SettingName,
-    Value, ValueType,
+    header::Header, nested_setting::NestedSetting, whitespace::Whitespace, SectionName,
+    SectionType, Setting, SettingName, Value, ValueType,
 };
 use crate::lexer::{Parsable, ParserOutput};
 use nom::multi::many0;
@@ -12,15 +12,17 @@ use std::{
 /// Represents an entire section, including the section type, the profile name, and all of the settings
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default, Hash)]
 pub struct Section {
+    pub(crate) leading_whitespace: Whitespace,
     pub(crate) header: Header,
     pub(crate) settings: Vec<Setting>,
+    pub(crate) trailing_whitespace: Whitespace,
 }
 
 impl Section {
     pub fn new(header: Header) -> Self {
         Self {
             header,
-            settings: Vec::new(),
+            ..Default::default()
         }
     }
 
@@ -78,12 +80,14 @@ impl Display for Section {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{}{}",
+            "{}{}{}{}",
+            self.leading_whitespace,
             self.header,
             self.settings
                 .iter()
                 .map(Setting::to_string)
-                .collect::<String>()
+                .collect::<String>(),
+            self.trailing_whitespace,
         )
     }
 }
@@ -92,9 +96,16 @@ impl<'a> Parsable<'a> for Section {
     type Output = Self;
 
     fn parse(input: &'a str) -> ParserOutput<'a, Self::Output> {
-        let (next, header) = Header::parse(input)?;
+        let (next, leading_whitespace) = Whitespace::parse(input)?;
+        let (next, header) = Header::parse(next)?;
         let (next, settings) = many0(Setting::parse)(next)?;
-        let section = Self { header, settings };
+        let (next, trailing_whitespace) = Whitespace::parse(next)?;
+        let section = Self {
+            header,
+            settings,
+            leading_whitespace,
+            trailing_whitespace,
+        };
 
         Ok((next, section))
     }
@@ -108,6 +119,24 @@ mod test {
     const SAMPLE_SECTION: &str = r#"[default] # This is my comment
 region=us-west-2
 output=json"#;
+
+    const LEADING_COMMENT: &str = r#"# This is my comment
+[default]
+region=us-west-2
+output=json"#;
+
+    const MULTIPLE_LEADING_COMMENT: &str = r#"# This is my comment
+# This is my comment
+[default]
+region=us-west-2
+output=json"#;
+
+    const MULTIPLE_TRAILING_COMMENT: &str = r#"[default]
+region=us-west-2
+output=json
+# This is my comment
+# This is my comment
+"#;
 
     const MULTIPLE_NESTED: &str = r#"[services profileB]
 ec2 = 
@@ -157,5 +186,26 @@ dynamodb =
         };
 
         assert_eq!(&section.to_string(), MULTIPLE_NESTED)
+    }
+
+    #[test]
+    fn leading_comment_on_section() {
+        let (_, section) = Section::parse(LEADING_COMMENT).expect("Should be valid");
+
+        assert_eq!(&section.to_string(), LEADING_COMMENT)
+    }
+
+    #[test]
+    fn multiple_leading_comment_on_section() {
+        let (_, section) = Section::parse(MULTIPLE_LEADING_COMMENT).expect("Should be valid");
+
+        assert_eq!(&section.to_string(), MULTIPLE_LEADING_COMMENT)
+    }
+
+    #[test]
+    fn multiple_trailing_comment_on_section() {
+        let (_, section) = Section::parse(MULTIPLE_TRAILING_COMMENT).expect("Should be valid");
+
+        assert_eq!(&section.to_string(), MULTIPLE_TRAILING_COMMENT)
     }
 }

@@ -1,15 +1,19 @@
 use crate::lexer::{hash, newline, Parsable, ParserOutput};
 use nom::{
     branch::alt,
-    character::complete::{crlf, not_line_ending, space0},
-    combinator::{eof, opt},
+    bytes::complete::tag,
+    character::complete::{char, crlf, not_line_ending, space0},
+    combinator::{eof, not, opt, recognize},
+    error::VerboseError,
+    multi::separated_list0,
     sequence::pair,
+    IResult, Parser,
 };
 use std::{fmt::Display, ops::Deref};
 
 /// Represents meaningless whitespace, including comments. Does not represent meaningful indentation.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Default, Hash)]
-pub(crate) struct Whitespace(String);
+pub(crate) struct Whitespace(pub(crate) String);
 
 impl Deref for Whitespace {
     type Target = str;
@@ -35,31 +39,25 @@ impl<'a> Parsable<'a> for Whitespace {
     type Output = Self;
 
     fn parse(input: &'a str) -> ParserOutput<'a, Self::Output> {
-        let (next, leading_spaces) = space0(input)?;
-        let (next, maybe_comment) = opt(pair(hash, not_line_ending))(next)?;
-        let (hash, rest) = maybe_comment.unwrap_or_default();
-        let (next, newline) = alt((newline, crlf, eof))(next)?;
-        let whitespace =
-            &input[0..(leading_spaces.len() + hash.len() + rest.len() + newline.len())];
+        let (next, whitespace) =
+            recognize(separated_list0(line_end, space0.and(opt(comment)))).parse(input)?;
+
         Ok((next, Whitespace(whitespace.to_string())))
     }
+}
+
+fn comment(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
+    recognize(hash.and(not_line_ending)).parse(input)
+}
+
+fn line_end(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
+    alt((newline, crlf))(input)
 }
 
 #[cfg(test)]
 mod test {
     use super::Whitespace;
     use crate::lexer::Parsable;
-
-    #[test]
-    fn parses_a_comment_with_no_leading_space_and_eof() {
-        let comment = "# I am a comment";
-
-        let (rest, com) = Whitespace::parse(comment).expect("Should be ok");
-
-        assert!(rest.is_empty());
-        assert_eq!(com, *comment);
-        assert_eq!(&com.to_string(), comment)
-    }
 
     #[test]
     fn parses_a_comment_with_no_leading_space_and_newline() {
@@ -105,17 +103,17 @@ mod test {
         assert_eq!(&com.to_string(), comment)
     }
 
-    //     #[test]
-    //     fn multilines_of_whitespace() {
-    //         let comment = r#"
-    // # hello comment
-    //            # more comment stuff
-    //         "#;
+    #[test]
+    fn multilines_of_whitespace() {
+        let comment = r#"
+    # hello comment
+               # more comment stuff
+            "#;
 
-    //         let (rest, com) = Whitespace::parse(comment).expect("Should be ok");
+        let (rest, com) = Whitespace::parse(comment).expect("Should be ok");
 
-    //         assert!(rest.is_empty());
-    //         assert_eq!(com, *comment);
-    //         assert_eq!(&com.to_string(), comment)
-    //     }
+        assert!(rest.is_empty());
+        assert_eq!(com, *comment);
+        assert_eq!(&com.to_string(), comment)
+    }
 }

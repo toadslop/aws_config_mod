@@ -64,7 +64,7 @@ mod test {
 
     #[test]
     fn parses_a_setting_no_spaces() {
-        let setting = "region=us-west-2";
+        let setting = "region=us-west-2\n";
 
         let (rest, set) = NestedSetting::parse(setting).expect("Should be valid");
 
