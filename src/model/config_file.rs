@@ -11,17 +11,22 @@ use nom::{
 };
 use std::fmt::Display;
 
-/// Represents a complete aws config file
+/// Represents a complete aws config file, including internal tracking of [Whitespace]
 #[derive(Debug, PartialEq, Eq, Clone, Hash, Default)]
 pub struct ConfigFile {
+    /// Whitespace and comments at the head of the file, before the first section
     pub(crate) leading_whitespace: Whitespace,
+
     /// Represents the content of the file. The content includes the sections of the config
     /// as well as full-line whitespace, which includes comments
     pub(crate) sections: Vec<Section>,
+
+    /// Whitespace and comments at the end of the file, after the end of the last section
     pub(crate) trailing_whitespace: Whitespace,
 }
 
 impl ConfigFile {
+    /// Get an immutable reference to a [Section] by its [SectionType] and [SectionName]
     pub(crate) fn get_section(
         &self,
         section_type: &SectionType,
@@ -33,6 +38,7 @@ impl ConfigFile {
         })
     }
 
+    /// Get a mutable reference to a [Section]
     pub(crate) fn get_section_mut(
         &mut self,
         section_type: &SectionType,
@@ -49,6 +55,7 @@ impl ConfigFile {
         })
     }
 
+    /// Check if the given [Section] exists from a [SectionPath]
     pub(crate) fn contains_section(&self, section_path: &SectionPath) -> bool {
         self.sections.iter().any(|section| {
             section.get_name() == section_path.section_name.as_ref()
@@ -56,6 +63,8 @@ impl ConfigFile {
         })
     }
 
+    /// Given a [SectionPath], create the [Section] if it doesn't exist and return a mutable
+    /// reference to it.
     pub(crate) fn insert_section(&mut self, section_path: &SectionPath) -> &mut Section {
         if !self.contains_section(section_path) {
             let new_section: Section = Section::new(Header::from(section_path.clone()));

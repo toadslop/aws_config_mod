@@ -7,7 +7,7 @@ use nom::{
 };
 use std::fmt::Display;
 
-/// Represents non-comment whitespace at the head of start of a line
+/// Represents non-comment whitespace at the head of start of a [crate::Setting]
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Hash, Default)]
 pub(crate) struct Indent(String);
 

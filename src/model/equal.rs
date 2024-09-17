@@ -9,6 +9,7 @@ use std::{fmt::Display, ops::Deref};
 pub struct Equal(String);
 
 impl Equal {
+    /// Generate a new [Equal] instance padded on the left and right by one space.
     pub fn padded(padding: usize) -> Self {
         let front_pad = " ".repeat(padding);
         let back_pad = " ".repeat(padding);

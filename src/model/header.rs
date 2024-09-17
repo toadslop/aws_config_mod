@@ -19,6 +19,7 @@ pub struct Header {
 }
 
 impl Header {
+    /// Provided a [SectionType] and optional [SectionName], creates a new section [Header].
     pub fn new(section_type: SectionType, section_name: Option<SectionName>) -> Self {
         Self {
             section_name,
