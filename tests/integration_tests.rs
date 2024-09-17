@@ -1,4 +1,4 @@
-use aws_config_modify::{AwsConfigFile, SectionPath, SectionType, SettingPath, Value, ValueType};
+use aws_config_mod::{AwsConfigFile, SectionPath, SectionType, SettingPath, Value, ValueType};
 
 const SAMPLE_FILE: &str = r#"
 [profile A]
@@ -200,7 +200,7 @@ ec2 =
 
     let setting_path = SettingPath::try_from("profile.A.other_setting").expect("Should parse");
     config.set(setting_path, Value::from("my-other-setting"));
-    dbg!(&config);
+
     let stringified = config.to_string();
     assert_eq!(stringified, EXPECTED)
 }

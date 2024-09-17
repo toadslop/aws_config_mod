@@ -3,7 +3,7 @@
 version = 3
 
 [[package]]
-name = "aws_config_modify"
+name = "aws_config_mod"
 version = "0.1.0"
 dependencies = [
  "nom",

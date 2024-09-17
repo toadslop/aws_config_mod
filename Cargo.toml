@@ -1,8 +1,13 @@
 [package]
-name = "aws_config_modify"
+name = "aws_config_mod"
+description = "Read and modify AWS configuration files while preserving existing whitespace and comments"
+authors = ["Brian Heise"]
 version = "0.1.0"
 edition = "2021"
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+keywords = ["aws", "config", "sdk"]
 
 [dependencies]
 nom = { version = "7", default-features = false, features = ["std"] }
-thiserror = "1.0.63"
+thiserror = "1"
