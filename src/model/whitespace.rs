@@ -11,7 +11,17 @@ use std::{fmt::Display, ops::Deref};
 
 /// Represents meaningless whitespace, including comments. Does not represent meaningful indentation.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Default, Hash)]
-pub struct Whitespace(pub(crate) String); // TODO: return this to private
+pub(crate) struct Whitespace(pub(crate) String);
+
+impl Whitespace {
+    pub fn newline() -> Self {
+        Whitespace(String::from("\n")) // TODO: need to detect newlines from file
+    }
+
+    pub fn none() -> Self {
+        Default::default()
+    }
+}
 
 impl Deref for Whitespace {
     type Target = str;

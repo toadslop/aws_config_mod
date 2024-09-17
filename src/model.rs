@@ -4,6 +4,7 @@ mod equal;
 mod header;
 mod indent;
 mod nested_setting;
+mod nested_settings;
 mod section;
 mod section_name;
 mod section_path;

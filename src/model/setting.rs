@@ -14,17 +14,17 @@ pub struct Setting {
     pub(crate) setting_name: SettingName,
     pub(crate) value: ValueType,
     pub(crate) equal: Equal,
-    pub(crate) trailing_whitespace: Whitespace,
+    // pub(crate) trailing_whitespace: Whitespace,
 }
 
 impl Setting {
     pub fn new(setting_name: SettingName, value: ValueType) -> Self {
         Self {
-            leading_whitespace: Default::default(),
+            leading_whitespace: Whitespace::newline(),
             setting_name,
             value,
             equal: Equal::default(),
-            trailing_whitespace: Default::default(),
+            // trailing_whitespace: Whitespace::newline(),
         }
     }
 
@@ -41,12 +41,12 @@ impl Display for Setting {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{}{}{}{}{}",
+            "{}{}{}{}",
             self.leading_whitespace,
             self.setting_name,
             self.equal,
             self.value,
-            self.trailing_whitespace
+            // self.trailing_whitespace
         )
     }
 }
@@ -59,13 +59,13 @@ impl<'a> Parsable<'a> for Setting {
         let (next, setting_name) = SettingName::parse(next)?;
         let (next, equal) = Equal::parse(next)?;
         let (next, value) = ValueType::parse(next)?;
-        let (next, trailing_whitespace) = Whitespace::parse(next)?;
+        // let (next, trailing_whitespace) = Whitespace::parse(next)?;
 
         let setting = Self {
             setting_name,
             value,
             equal,
-            trailing_whitespace,
+            // trailing_whitespace,
             leading_whitespace,
         };
 
@@ -81,8 +81,7 @@ mod test {
     #[test]
     fn parses_a_setting_no_spaces() {
         let setting = r#"
-region=us-west-2
-"#;
+region=us-west-2"#;
 
         let (rest, set) = Setting::parse(setting).expect("Should be valid");
 
@@ -115,7 +114,7 @@ region=us-west-2
             crate::ValueType::Nested(nested) => nested,
         };
 
-        let first = nested.1.first().expect("Should have a first");
+        let first = nested.first().expect("Should have a first");
 
         assert_eq!(first.name(), "endpoint_url");
         assert_eq!(first.value(), "https://profile-b-ec2-endpoint.aws");
@@ -140,7 +139,7 @@ region=us-west-2
             crate::ValueType::Nested(nested) => nested,
         };
 
-        let first = nested.1.first().expect("Should have a first");
+        let first = nested.first().expect("Should have a first");
 
         assert_eq!(first.name(), "endpoint_url");
         assert_eq!(first.value(), "https://profile-b-ec2-endpoint.aws");
@@ -165,7 +164,7 @@ region=us-west-2
             crate::ValueType::Nested(nested) => nested,
         };
 
-        let first = nested.1.first().expect("Should have a first");
+        let first = nested.first().expect("Should have a first");
 
         assert_eq!(first.name(), "endpoint_url");
         assert_eq!(first.value(), "https://profile-b-ec2-endpoint.aws");
@@ -189,7 +188,7 @@ region=us-west-2
             crate::ValueType::Nested(nested) => nested,
         };
 
-        let first = nested.1.first().expect("Should have a first");
+        let first = nested.first().expect("Should have a first");
 
         assert_eq!(first.name(), "endpoint_url");
         assert_eq!(first.value(), "https://profile-b-ec2-endpoint.aws");

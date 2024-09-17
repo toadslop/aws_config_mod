@@ -8,9 +8,19 @@ use std::{fmt::Display, ops::Deref};
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Equal(String);
 
+impl Equal {
+    pub fn padded(padding: usize) -> Self {
+        let front_pad = " ".repeat(padding);
+        let back_pad = " ".repeat(padding);
+        let inner = format!("{}={}", front_pad, back_pad);
+
+        Self(inner)
+    }
+}
+
 impl Default for Equal {
     fn default() -> Self {
-        Self(" = ".to_string())
+        Self::padded(1)
     }
 }
 

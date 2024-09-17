@@ -82,10 +82,10 @@ impl AwsConfigFile {
     pub fn set(&mut self, setting_path: SettingPath, value: Value) {
         let section = match self.0.get_section_mut(
             &setting_path.section_path.section_type,
-            setting_path.section_path.section_name.as_ref(),
+            &setting_path.section_path.section_name,
         ) {
             Some(section) => section,
-            None => self.0.add_section(setting_path.section_path),
+            None => self.0.insert_section(&setting_path.section_path),
         };
 
         section.set(setting_path.setting_name, value);

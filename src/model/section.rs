@@ -59,7 +59,7 @@ impl Section {
 
         match setting.value() {
             super::ValueType::Single(_) => None,
-            super::ValueType::Nested((_, nested)) => nested
+            super::ValueType::Nested(nested) => nested
                 .iter()
                 .find(|setting| setting.name() == nested_setting_name),
         }

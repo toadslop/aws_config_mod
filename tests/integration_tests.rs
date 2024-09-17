@@ -80,13 +80,11 @@ fn can_get_a_nested_section() {
     assert_eq!(setting.name(), "ec2");
 
     let settings = match setting.value() {
-        // TODO: the whitespace should not be in the public api
         ValueType::Single(_) => panic!("Should be nested"),
         ValueType::Nested(nested) => nested,
     };
 
     let setting = settings
-        .1
         .first()
         .expect("Should have a first nested setting");
 
@@ -185,7 +183,7 @@ ec2 =
 fn can_add_a_setting_to_existing_section() {
     const EXPECTED: &str = r#"
 [profile A]
-credential_source = my-new-credential-source
+credential_source = Ec2InstanceMetadata
 endpoint_url = https://profile-a-endpoint.aws/
 other_setting = my-other-setting
 
@@ -202,6 +200,7 @@ ec2 =
 
     let setting_path = SettingPath::try_from("profile.A.other_setting").expect("Should parse");
     config.set(setting_path, Value::from("my-other-setting"));
+    dbg!(&config);
     let stringified = config.to_string();
     assert_eq!(stringified, EXPECTED)
 }

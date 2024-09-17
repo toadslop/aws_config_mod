@@ -9,7 +9,7 @@ use nom::{
     sequence::tuple,
     IResult, Parser,
 };
-use std::fmt::Display;
+use std::{collections::HashMap, fmt::Display};
 
 /// Represents a complete aws config file
 #[derive(Debug, PartialEq, Eq, Clone, Hash, Default)]
@@ -36,11 +36,11 @@ impl ConfigFile {
     pub(crate) fn get_section_mut(
         &mut self,
         section_type: &SectionType,
-        section_name: Option<&SectionName>,
+        section_name: &Option<SectionName>,
     ) -> Option<&mut Section> {
         self.sections.iter_mut().find_map(|section| {
             if section.header.section_type == *section_type
-                && section.header.section_name.as_ref() == section_name
+                && section.header.section_name == *section_name
             {
                 Some(section)
             } else {
@@ -49,14 +49,21 @@ impl ConfigFile {
         })
     }
 
-    pub(crate) fn add_section(&mut self, section_path: SectionPath) -> &mut Section {
-        let new_section: Section = Section::new(Header::from(section_path.clone()));
+    pub(crate) fn contains_section(&self, section_path: &SectionPath) -> bool {
+        self.sections.iter().any(|section| {
+            section.get_name() == section_path.section_name.as_ref()
+                && *section.get_type() == section_path.section_type
+        })
+    }
 
-        self.get_section_mut(
-            &section_path.section_type,
-            section_path.section_name.as_ref(),
-        )
-        .unwrap()
+    pub(crate) fn insert_section(&mut self, section_path: &SectionPath) -> &mut Section {
+        if !self.contains_section(section_path) {
+            let new_section: Section = Section::new(Header::from(section_path.clone()));
+            self.sections.push(new_section);
+        }
+
+        self.get_section_mut(&section_path.section_type, &section_path.section_name)
+            .unwrap()
     }
 }
 
@@ -145,8 +152,8 @@ dynamodb =
         assert!(next.is_empty());
 
         let mut sections = config.sections.iter();
-        let first_newline = sections.next().unwrap();
-        let leading_comment = sections.next().unwrap();
+        let _ = sections.next().unwrap();
+        let _ = sections.next().unwrap();
 
         // TODO: finish this test
 
@@ -161,7 +168,7 @@ dynamodb =
 
         let mut sections = config.sections.iter();
 
-        let first_newline = sections.next().unwrap();
+        let _ = sections.next().unwrap();
 
         let _ = sections.next().unwrap();
 
