@@ -17,10 +17,6 @@ impl Whitespace {
     pub fn newline() -> Self {
         Whitespace(String::from("\n")) // TODO: need to detect newlines from file
     }
-
-    pub fn none() -> Self {
-        Default::default()
-    }
 }
 
 impl Deref for Whitespace {

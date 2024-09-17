@@ -14,7 +14,6 @@ pub struct Setting {
     pub(crate) setting_name: SettingName,
     pub(crate) value: ValueType,
     pub(crate) equal: Equal,
-    // pub(crate) trailing_whitespace: Whitespace,
 }
 
 impl Setting {
@@ -24,7 +23,6 @@ impl Setting {
             setting_name,
             value,
             equal: Equal::default(),
-            // trailing_whitespace: Whitespace::newline(),
         }
     }
 
@@ -42,11 +40,7 @@ impl Display for Setting {
         write!(
             f,
             "{}{}{}{}",
-            self.leading_whitespace,
-            self.setting_name,
-            self.equal,
-            self.value,
-            // self.trailing_whitespace
+            self.leading_whitespace, self.setting_name, self.equal, self.value,
         )
     }
 }
@@ -59,13 +53,11 @@ impl<'a> Parsable<'a> for Setting {
         let (next, setting_name) = SettingName::parse(next)?;
         let (next, equal) = Equal::parse(next)?;
         let (next, value) = ValueType::parse(next)?;
-        // let (next, trailing_whitespace) = Whitespace::parse(next)?;
 
         let setting = Self {
             setting_name,
             value,
             equal,
-            // trailing_whitespace,
             leading_whitespace,
         };
 

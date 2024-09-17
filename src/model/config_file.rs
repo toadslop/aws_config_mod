@@ -9,7 +9,7 @@ use nom::{
     sequence::tuple,
     IResult, Parser,
 };
-use std::{collections::HashMap, fmt::Display};
+use std::fmt::Display;
 
 /// Represents a complete aws config file
 #[derive(Debug, PartialEq, Eq, Clone, Hash, Default)]
