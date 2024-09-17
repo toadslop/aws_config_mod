@@ -1,5 +1,6 @@
+//! Collection of structs that represent the various structures of an aws config file.
+
 mod config_file;
-// mod entry;
 mod equal;
 mod header;
 mod indent;

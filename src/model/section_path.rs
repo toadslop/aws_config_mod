@@ -1,5 +1,5 @@
 use super::{SectionName, SectionType};
-use crate::{lexer::Parsable, util::to_owned_input};
+use crate::lexer::{to_owned_input, Parsable};
 use nom::{bytes::complete::tag, combinator::eof, error::VerboseError};
 use thiserror::Error;
 

@@ -1,5 +1,5 @@
 use super::{section_path::ConfigPathError, SectionPath, SettingName};
-use crate::{lexer::Parsable, util::to_owned_input};
+use crate::lexer::{to_owned_input, Parsable};
 use nom::{bytes::complete::tag, combinator::eof};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
