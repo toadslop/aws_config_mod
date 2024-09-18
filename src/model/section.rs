@@ -185,7 +185,7 @@ dynamodb =
         let (rest, section) = Section::parse(MULTIPLE_NESTED).expect("Should be valid");
         assert!(rest.is_empty());
         let settings = &section.settings;
-        dbg!(settings);
+
         let first = &settings[0];
 
         assert_eq!(**first.name(), *"ec2");

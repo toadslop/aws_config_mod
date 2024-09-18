@@ -10,13 +10,23 @@ use std::{
 /// Represents a setting in its entirety, including indentation, its name and value, and a comment
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Setting {
+    /// The whitespace and comments on the preceding line
     pub(crate) leading_whitespace: Whitespace,
+
+    /// The name of the [Setting]
     pub(crate) setting_name: SettingName,
+
+    /// The value of the setting. A top-level setting such as this may contain [crate::NestedSetting]s, so
+    /// the [ValueType] of this field indicates whether this is the case or not.
     pub(crate) value: ValueType,
+
+    /// The '=' sign appearing between the value and the name. This is to track what the original formatting
+    /// of the setting was before it was parsed so that it can be returned to its original state, even after editing.
     pub(crate) equal: Equal,
 }
 
 impl Setting {
+    /// Create a new [Setting]
     pub fn new(setting_name: SettingName, value: ValueType) -> Self {
         Self {
             leading_whitespace: Whitespace::newline(),
@@ -26,10 +36,12 @@ impl Setting {
         }
     }
 
+    /// Retrieve an immutable reference to the [SettingName]
     pub fn name(&self) -> &SettingName {
         &self.setting_name
     }
 
+    /// Retrieve an immutable reference to the [ValueType]
     pub fn value(&self) -> &ValueType {
         &self.value
     }

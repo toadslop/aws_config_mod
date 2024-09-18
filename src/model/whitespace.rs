@@ -14,6 +14,7 @@ use std::{fmt::Display, ops::Deref};
 pub(crate) struct Whitespace(pub(crate) String);
 
 impl Whitespace {
+    /// Generate a new [Whitespace] instance that only contains a single newline character
     pub fn newline() -> Self {
         Whitespace(String::from("\n")) // TODO: need to detect newlines from file
     }
@@ -50,10 +51,12 @@ impl<'a> Parsable<'a> for Whitespace {
     }
 }
 
+/// A helper parser that matches a comment -- in orther words, a '#' and then anything up to the end of the line
 fn comment(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
     recognize(hash.and(not_line_ending)).parse(input)
 }
 
+/// A helper parser that matches any valid newline character
 fn line_end(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
     alt((newline, crlf))(input)
 }

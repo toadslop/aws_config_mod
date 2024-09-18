@@ -3,9 +3,14 @@ use crate::lexer::Parsable;
 use nom::{branch::alt, combinator::map};
 use std::fmt::Display;
 
+/// Represents the two categories of value that a top-level [crate::Setting] may have.
+/// These are a [Value] or a list of [crate::NestedSetting]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum ValueType {
+    /// A single [Value], no nested settings
     Single(Value),
+
+    /// A set of [NestedSettings]
     Nested(NestedSettings),
 }
 

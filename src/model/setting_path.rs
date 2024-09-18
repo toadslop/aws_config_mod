@@ -2,9 +2,13 @@ use super::{SectionPath, SettingName};
 use crate::lexer::{to_owned_input, Parsable};
 use nom::{bytes::complete::tag, combinator::eof};
 
+/// A path to a [crate::Setting]. The path includes the [crate::SectionType], the [crate::SectionName],
+/// and the [SettingName] of the setting to be accessed.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SettingPath {
+    /// The path to the [crate::Section] that contains the [crate::Setting]
     pub(crate) section_path: SectionPath,
+    /// The name of the [crate::Setting] to be accessed.
     pub(crate) setting_name: SettingName,
 }
 
@@ -52,10 +56,17 @@ impl<'a> Parsable<'a> for SettingPath {
     }
 }
 
+/// Represents the path to a [crate::NestedSetting]. In practical terms, this means a [SectionPath]
+/// followed by a two [SettingName]s.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NestedSettingPath {
+    /// The path to the [crate::Section] containing the nested setting to access.
     pub(crate) section_path: SectionPath,
+
+    /// The name of the parent [crate::Setting] to access.
     pub(crate) setting_name: SettingName,
+
+    /// The name of the [crate::NestedSetting] that you want to access.
     pub(crate) nested_setting_name: SettingName,
 }
 
