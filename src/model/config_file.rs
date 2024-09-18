@@ -1,3 +1,5 @@
+//! The main workhorse of the crate, handling parsing, manipulating, and stringifying aws configuration files.
+
 use super::{
     header::Header, whitespace::Whitespace, NestedSetting, NestedSettingPath, Section, SectionName,
     SectionPath, SectionType, Setting, SettingPath, Value,
@@ -12,7 +14,10 @@ use nom::{
 };
 use std::{fmt::Display, str::FromStr};
 
-/// Represents a complete aws config file, including internal tracking of [Whitespace]
+/// Represents a complete aws config file. Note that this struct can also be use to successfully parse a
+/// credentials file, but you won't have credentials-file-specific type safety. At the moment this is the only choice,
+/// but in the future a credentials-file specific struct will be available that will prevent setting settings,
+/// such as nested settings or other settings that are not found in a credentials file.
 #[derive(Debug, PartialEq, Eq, Clone, Hash, Default)]
 pub struct AwsConfigFile {
     /// Whitespace and comments at the head of the file, before the first section

@@ -1,3 +1,6 @@
+//! Contains items related to parsing setting paths. Setting paths are comprise of a section type, a section name, and a setting name.
+//! They are used to identify a specific setting from the top level of a configuration file.
+
 use super::{SectionPath, SettingName};
 use crate::lexer::{to_owned_input, Parsable};
 use nom::{bytes::complete::tag, combinator::eof};

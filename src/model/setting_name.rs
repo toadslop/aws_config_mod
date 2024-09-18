@@ -1,3 +1,6 @@
+//! Contains items related to parsing and stringifying setting names. Setting names are the
+//! identifiers for the setting values in a configuration file.
+
 use crate::lexer::{Parsable, ParserOutput};
 use nom::{
     branch::alt, bytes::complete::tag, character::complete::alphanumeric1, combinator::recognize,

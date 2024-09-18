@@ -1,3 +1,5 @@
+//! Contains items related to parsing and stringifying lists of nested settings.
+
 use super::{whitespace::Whitespace, NestedSetting};
 use crate::lexer::Parsable;
 use nom::{combinator::map, multi::many0, Parser};

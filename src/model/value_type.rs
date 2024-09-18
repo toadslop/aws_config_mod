@@ -1,3 +1,6 @@
+//! Contains items related to distinguishing whether a value for a setting is a list of nested settings, or whether it is
+//! a single value
+
 use super::{nested_setting::NestedSetting, nested_settings::NestedSettings, Value};
 use crate::lexer::Parsable;
 use nom::{branch::alt, combinator::map};

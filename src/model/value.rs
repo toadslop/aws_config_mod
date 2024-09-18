@@ -1,3 +1,5 @@
+//! Contains items related to parsing and stringifying setting values
+
 use crate::lexer::{Parsable, ParserOutput};
 use nom::{character::complete::none_of, combinator::recognize, multi::many1_count};
 use std::{fmt::Display, ops::Deref};

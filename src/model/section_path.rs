@@ -1,3 +1,6 @@
+//! Contains items related to parsing section paths. Section paths are comprised of a section name and type
+//! and are used to identify specific sections within a configuration file.
+
 use super::{SectionName, SectionType};
 use crate::lexer::{to_owned_input, Parsable};
 use nom::{bytes::complete::tag, combinator::eof};

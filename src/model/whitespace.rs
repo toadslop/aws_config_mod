@@ -1,3 +1,5 @@
+//! Contains items related to parsing and stringifying whitespace. Whitespace includes tabs, spaces, newlines, and comments.
+
 use crate::lexer::{hash, newline, Parsable, ParserOutput};
 use nom::{
     branch::alt,

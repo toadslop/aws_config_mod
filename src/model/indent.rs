@@ -1,3 +1,7 @@
+//! Items related to parsing and stringifying indentation. In an aws config file, only
+//! spaces and tabs from the start of a line to the start of a setting qualify as
+//! indentation.
+
 use crate::lexer::{Parsable, ParserOutput};
 use nom::{
     character::complete::{alphanumeric1, space1},

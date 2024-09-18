@@ -1,3 +1,6 @@
+//! Items related to how '=' signs are parsed and stringified. This type is internal and
+//! should not be exposed directly to end users.
+
 use crate::lexer::{Parsable, ParserOutput};
 use nom::{bytes::complete::tag, character::complete::space0};
 use std::{fmt::Display, ops::Deref};
@@ -6,7 +9,7 @@ use std::{fmt::Display, ops::Deref};
 /// This is an internal type used mainly to help return a file to its original state,
 /// even preserving unusual space.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Equal(String);
+pub(crate) struct Equal(String);
 
 impl Equal {
     /// Generate a new [Equal] instance padded on the left and right by one space.

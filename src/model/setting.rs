@@ -1,3 +1,10 @@
+//! Contains items related to parsing and stringifying settings. Settings are found under section
+//! headers and are comprised of a settign name followed by and equals sign, which is then followed by
+//! one of the following:
+//!
+//! - a value, which is a sequence of non-whitespace characters excluding the # character
+//! - a newline followed by a list of indented settings
+
 use super::{
     equal::Equal, setting_name::SettingName, value_type::ValueType, whitespace::Whitespace,
 };

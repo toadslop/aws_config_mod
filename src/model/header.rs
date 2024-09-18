@@ -1,3 +1,7 @@
+//! Items related to parsing and stringifying headers from aws config files. A header
+//! is enclosed in square brackets [] and my contain one to two identifiers. For example,
+//! [default] and [profile A] are both valid headers
+
 use super::{
     section_name::SectionName, section_type::SectionType, whitespace::Whitespace, SectionPath,
 };

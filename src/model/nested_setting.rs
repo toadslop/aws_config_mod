@@ -1,3 +1,7 @@
+//! Contains items related to parsing and stringifying settings which are nested under other settings.
+//! Nested settings are identified by the presence of a setting without a value followed by a list of
+//! settings with values which are preceded by at least one space or tab character.
+
 use super::{
     equal::Equal, indent::Indent, setting_name::SettingName, value::Value, whitespace::Whitespace,
 };

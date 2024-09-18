@@ -1,3 +1,5 @@
+//! Contains items related to parsing and stringifying entire sections, including the header and all the settings.
+
 use super::{
     header::Header, nested_setting::NestedSetting, whitespace::Whitespace, SectionName,
     SectionType, Setting, SettingName, Value, ValueType,

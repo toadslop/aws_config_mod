@@ -1,3 +1,5 @@
+//! Contains items related to parsing section types.
+
 use crate::lexer::{Parsable, ParserOutput};
 use nom::{branch::alt, bytes::complete::tag, character::complete::alphanumeric1, combinator::map};
 use std::fmt::Display;

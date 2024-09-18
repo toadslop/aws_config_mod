@@ -1,3 +1,8 @@
+//! Contains items related to parsing and stringifying section names. Section names are contained within
+//! square brackets at the start of sections. If only one item is contained between the square brackets,
+//! that is the section name. If two items are contained within the square brackets, the second item is
+//! the section name and the first is the section type.
+
 use crate::lexer::{Parsable, ParserOutput};
 use nom::{
     branch::alt, bytes::complete::tag, character::complete::alphanumeric1, combinator::recognize,
