@@ -9,18 +9,31 @@ use std::fmt::Display;
 /// to avoid defining an unnecessary recursive type.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct NestedSetting {
+    /// Giving the line `region = us-east-2`, 'region' is the [SettingName]
     pub(crate) setting_name: SettingName,
+
+    /// Giving the line `region = us-east-2`, 'use-east-2' is the [Value]
     pub(crate) value: Value,
+
+    /// Giving the line `region = us-east-2`, ' = ' is the [Equal]. It includes option padding of spaces
+    /// before and after the equal sign.
     pub(crate) equal: Equal,
+
+    /// Giving the line `  region = us-east-2`, the leading two spaces are the [Indent].
     pub(crate) leading_spaces: Indent,
+
+    /// Giving the line `  region = us-east-2 # This is a comment`, ' # This is a comment' is the [Whitespace].
+    /// Any whitespace before or after the setting is not included here.
     pub(crate) whitespace: Whitespace,
 }
 
 impl NestedSetting {
+    /// Given the setting `region = us-east-2`, this will return 'region'
     pub fn name(&self) -> &SettingName {
         &self.setting_name
     }
 
+    /// Given the setting `region = us-east-2`, this will return 'us-east-2'
     pub fn value(&self) -> &Value {
         &self.value
     }

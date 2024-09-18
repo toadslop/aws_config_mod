@@ -1,3 +1,9 @@
+#![warn(missing_docs)]
+#![warn(clippy::missing_docs_in_private_items)]
+#![warn(clippy::dbg_macro)]
+#![warn(clippy::unwrap_used)]
+#![warn(clippy::expect_used)]
+
 //! # aws_config_mod
 //!
 //! A missing piece of the Rust AWS SDK. A current missing feature of the SDK is the ability
@@ -42,6 +48,9 @@
 //! - support for credentials files
 //! - improved error messages
 //! - automatic config file loading via standard aws config locations and environment variables
+//! - detect and match formatting
+//! - set formatting
+//! - utilize aws types
 
 mod error;
 mod lexer;

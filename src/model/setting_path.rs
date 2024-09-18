@@ -1,4 +1,4 @@
-use super::{section_path::ConfigPathError, SectionPath, SettingName};
+use super::{SectionPath, SettingName};
 use crate::lexer::{to_owned_input, Parsable};
 use nom::{bytes::complete::tag, combinator::eof};
 
@@ -9,7 +9,7 @@ pub struct SettingPath {
 }
 
 impl TryFrom<&str> for SettingPath {
-    type Error = ConfigPathError;
+    type Error = crate::Error;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         let (_, config_path) = Self::parse(value).map_err(to_owned_input)?;
@@ -19,7 +19,7 @@ impl TryFrom<&str> for SettingPath {
 }
 
 impl TryFrom<(&str, &str, &str)> for SettingPath {
-    type Error = ConfigPathError;
+    type Error = crate::Error;
 
     fn try_from(
         (section_type, section_name, setting_name): (&str, &str, &str),
@@ -60,7 +60,7 @@ pub struct NestedSettingPath {
 }
 
 impl TryFrom<&str> for NestedSettingPath {
-    type Error = ConfigPathError;
+    type Error = crate::Error;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         let (_, nested_path) = Self::parse(value).map_err(to_owned_input)?;

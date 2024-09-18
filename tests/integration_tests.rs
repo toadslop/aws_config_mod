@@ -15,6 +15,18 @@ ec2 =
   endpoint_url = https://profile-b-ec2-endpoint.aws
 "#;
 
+const SAMPLE_CRED_FILE: &str = r#"
+[default]
+aws_access_key_id=AKIAIOSFODNN7EXAMPLE
+aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+aws_session_token=IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZVERYLONGSTRINGEXAMPLE
+
+[other]
+aws_access_key_id=AKIAIOSFODNN7EXAMPLE
+aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+aws_session_token=IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZVERYLONGSTRINGEXAMPLE
+"#;
+
 #[test]
 fn can_get_a_section_with_a_string() {
     let config = SAMPLE_FILE
@@ -222,4 +234,12 @@ ec2 =
     assert_eq!(stringified, EXPECTED)
 }
 
-// TODO: credentials files
+#[test]
+fn can_parse_a_credential_file() {
+    let config = SAMPLE_CRED_FILE
+        .parse::<AwsConfigFile>()
+        .expect("Should be valid");
+
+    dbg!(config);
+    panic!()
+}

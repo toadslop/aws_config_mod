@@ -13,8 +13,13 @@ use std::fmt::Display;
 /// A header of a config section. Contains the section type as well as the profile.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default, Hash)]
 pub struct Header {
+    /// The name of the section. For example, in the heading [profile A], 'A' is the name.
     pub(crate) section_name: Option<SectionName>,
+
+    /// The section type. For example, in [profile A], 'profile' is the section type.
     pub(crate) section_type: SectionType,
+
+    /// Any whitespace or comment which follows the header
     pub(crate) whitespace: Whitespace,
 }
 

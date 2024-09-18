@@ -3,9 +3,25 @@ use crate::lexer::Parsable;
 use nom::{combinator::map, multi::many0, Parser};
 use std::{fmt::Display, ops::Deref};
 
+/// Given the configuration file excert below:
+///
+/// ```
+/// [profile test]
+/// region = us-west-2
+/// s3 =
+///    max_concurrent_requests=10
+///    max_queue_size=1000
+/// ```
+///
+/// [NestedSettings] would include the content of the last two lines
+///
+/// This wrapper struct exists to hold whitespace that precedes the list as well as the list itself
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct NestedSettings {
+    /// Includes any whitespace or comment that occurs in the line preceeding the first nested item.
     pub(crate) leading_whitespace: Whitespace,
+
+    /// The list of [NestedSettings]
     pub(crate) nested_settings: Vec<NestedSetting>,
 }
 

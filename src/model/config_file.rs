@@ -138,6 +138,8 @@ impl AwsConfigFile {
             self.sections.push(new_section);
         }
 
+        #[allow(clippy::unwrap_used)]
+        // This cannot fail because we just added the item if it didn't exist
         self.get_section_mut(&section_path.section_type, &section_path.section_name)
             .unwrap()
     }
