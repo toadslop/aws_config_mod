@@ -12,13 +12,21 @@ use std::{
 /// Represents an entire section, including the section type, the profile name, and all of the settings
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default, Hash)]
 pub struct Section {
+    /// Any whitespace or comments that appear before the section
     pub(crate) leading_whitespace: Whitespace,
+
+    /// The section header, which contains the optional section type and the section name
     pub(crate) header: Header,
+
+    /// The list of settings for the section
     pub(crate) settings: Vec<Setting>,
+
+    /// Any whitespace or comments that appear after the section
     pub(crate) trailing_whitespace: Whitespace,
 }
 
 impl Section {
+    /// Create a new section, without any settings.
     pub fn new(header: Header) -> Self {
         Self {
             header,
@@ -26,30 +34,36 @@ impl Section {
         }
     }
 
+    /// Retrieve the [SectionType] of this [Section]
     pub fn get_type(&self) -> &SectionType {
         &self.header.section_type
     }
 
+    /// Get the optional [SectionName] of this section
     pub fn get_name(&self) -> Option<&SectionName> {
         self.header.section_name.as_ref()
     }
 
+    /// Get an immutable reference to the [Setting]s of this section
     pub fn settings(&self) -> &[Setting] {
         &self.settings
     }
 
+    /// Retrieve a specific [Setting] by [SettingName], if it exists
     pub fn get_setting(&self, setting_name: &SettingName) -> Option<&Setting> {
         self.settings
             .iter()
             .find(|setting| setting.name() == setting_name)
     }
 
+    /// Retrieve a mutable reference to a [Setting] by its [SettingName], if it exists
     pub fn get_setting_mut(&mut self, setting_name: &SettingName) -> Option<&mut Setting> {
         self.settings
             .iter_mut()
             .find(|setting| setting.name() == setting_name)
     }
 
+    /// Lookup a [NestedSetting], which is a setting nested under another setting, if it exists.
     pub fn get_nested_setting(
         &self,
         setting_name: &SettingName,
@@ -65,6 +79,7 @@ impl Section {
         }
     }
 
+    /// Change the [Value] of an existing [Setting]
     pub fn set(&mut self, setting_name: SettingName, value: Value) {
         if let Some(setting) = self.get_setting_mut(&setting_name) {
             setting.value = ValueType::Single(value);

@@ -6,13 +6,26 @@ use std::fmt::Display;
 /// encountered, rather than failing it's value is collected under [SectionType::Other]
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default, Hash)]
 pub enum SectionType {
+    /// The default section type, referring to the default profile
     #[default]
     Default,
+
+    /// A section which contains a profile definition
     Profile,
+
+    /// A section which contains configuratino for sso sessions
     SsoSession,
+
+    /// A section which contains configurations for various aws services
     Services,
+
+    /// A section which contains configuration for aws cli plugins
     Plugins,
+
+    /// A section which contains preview features which are enabled or disabled
     Preview,
+
+    /// A catchall to store any other section types which may appear
     Other(String),
 }
 
@@ -45,11 +58,22 @@ impl PartialEq<SectionType> for str {
 }
 
 impl SectionType {
+    /// The string represenation of the profile section type
     const PROFILE: &'static str = "profile";
+
+    /// The string represenation of the default section type
     const DEFAULT: &'static str = "default";
+
+    /// The string represenation of the sso-session section type
     const SSO_SESSION: &'static str = "sso-session";
+
+    /// The string represenation of the services section type
     const SERVICES: &'static str = "services";
+
+    /// The string represenation of the plugins section type
     const PLUGINS: &'static str = "plugins";
+
+    /// The string represenation of the preview section type
     const PREVIEW: &'static str = "preview";
 }
 

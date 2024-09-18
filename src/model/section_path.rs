@@ -1,7 +1,6 @@
 use super::{SectionName, SectionType};
 use crate::lexer::{to_owned_input, Parsable};
-use nom::{bytes::complete::tag, combinator::eof, error::VerboseError};
-use thiserror::Error;
+use nom::{bytes::complete::tag, combinator::eof};
 
 /// Represents the path to a specific [crate::Section] in a config file.
 #[derive(Debug, Clone, PartialEq, Eq)]
