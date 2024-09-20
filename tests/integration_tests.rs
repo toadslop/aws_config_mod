@@ -1,4 +1,7 @@
-use aws_config_mod::{AwsConfigFile, SectionPath, SectionType, SettingPath, Value, ValueType};
+use aws_config_mod::{
+    AwsConfigFile, AwsCredentialsFile, SectionName, SectionPath, SectionType, SettingPath, Value,
+    ValueType,
+};
 
 const SAMPLE_FILE: &str = r#"
 [profile A]
@@ -237,9 +240,8 @@ ec2 =
 #[test]
 fn can_parse_a_credential_file() {
     let config = SAMPLE_CRED_FILE
-        .parse::<AwsConfigFile>()
+        .parse::<AwsCredentialsFile>()
         .expect("Should be valid");
-
-    dbg!(config);
-    panic!()
+    let section_path = SectionPath::<SectionName>::try_from("profile.A").expect("Should parse");
+    config.get_profile(section_path);
 }

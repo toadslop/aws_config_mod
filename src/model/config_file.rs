@@ -1,16 +1,17 @@
 //! The main workhorse of the crate, handling parsing, manipulating, and stringifying aws configuration files.
 
 use super::{
-    header::Header, whitespace::Whitespace, NestedSetting, NestedSettingPath, Section, SectionName,
-    SectionPath, SectionType, Setting, SettingPath, Value,
+    header::ConfigHeader, whitespace::Whitespace, NestedSetting, NestedSettingPath, Section,
+    SectionName, SectionPath, SectionType, Setting, SettingPath, Value,
 };
 use crate::lexer::{to_owned_input, Parsable};
+use nom::Parser;
 use nom::{
     combinator::{eof, opt},
     error::VerboseError,
     multi::many0,
     sequence::tuple,
-    IResult, Parser,
+    IResult,
 };
 use std::{fmt::Display, str::FromStr};
 
@@ -25,7 +26,7 @@ pub struct AwsConfigFile {
 
     /// Represents the content of the file. The content includes the sections of the config
     /// as well as full-line whitespace, which includes comments
-    pub(crate) sections: Vec<Section>,
+    pub(crate) sections: Vec<Section<ConfigHeader>>,
 
     /// Whitespace and comments at the end of the file, after the end of the last section
     pub(crate) trailing_whitespace: Whitespace,
@@ -49,7 +50,7 @@ impl AwsConfigFile {
     }
 
     /// Given a [SectionPath], will find and return the [Section] if it exists; otherwise returns [None].
-    pub fn get_section(&self, config_path: &SectionPath) -> Option<&Section> {
+    pub fn get_section(&self, config_path: &SectionPath) -> Option<&Section<ConfigHeader>> {
         let SectionPath {
             section_type,
             section_name,
@@ -103,7 +104,7 @@ impl AwsConfigFile {
         &self,
         section_type: &SectionType,
         section_name: Option<&SectionName>,
-    ) -> Option<&Section> {
+    ) -> Option<&Section<ConfigHeader>> {
         self.sections.iter().find(|section| {
             section.header.section_type == *section_type
                 && section.header.section_name.as_ref() == section_name
@@ -115,7 +116,7 @@ impl AwsConfigFile {
         &mut self,
         section_type: &SectionType,
         section_name: &Option<SectionName>,
-    ) -> Option<&mut Section> {
+    ) -> Option<&mut Section<ConfigHeader>> {
         self.sections.iter_mut().find_map(|section| {
             if section.header.section_type == *section_type
                 && section.header.section_name == *section_name
@@ -137,9 +138,13 @@ impl AwsConfigFile {
 
     /// Given a [SectionPath], create the [Section] if it doesn't exist and return a mutable
     /// reference to it.
-    pub(crate) fn insert_section(&mut self, section_path: &SectionPath) -> &mut Section {
+    pub(crate) fn insert_section(
+        &mut self,
+        section_path: &SectionPath,
+    ) -> &mut Section<ConfigHeader> {
         if !self.contains_section(section_path) {
-            let new_section: Section = Section::new(Header::from(section_path.clone()));
+            let new_section: Section<ConfigHeader> =
+                Section::new(ConfigHeader::from(section_path.clone()));
             self.sections.push(new_section);
         }
 
@@ -171,7 +176,7 @@ impl<'a> Parsable<'a> for AwsConfigFile {
     fn parse(input: &'a str) -> IResult<&'a str, Self::Output, VerboseError<&'a str>> {
         let (next, ((leading_whitespace, sections, trailing_whitespace), _)) = tuple((
             Whitespace::parse,
-            opt(many0(Section::parse)),
+            opt(many0(Section::<ConfigHeader>::parse)),
             Whitespace::parse,
         ))
         .and(eof)

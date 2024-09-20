@@ -58,6 +58,6 @@ mod model;
 
 pub use error::Error;
 pub use model::{
-    AwsConfigFile, NestedSetting, NestedSettingPath, Section, SectionName, SectionPath,
-    SectionType, Setting, SettingName, SettingPath, Value, ValueType,
+    AwsConfigFile, AwsCredentialsFile, NestedSetting, NestedSettingPath, Section, SectionName,
+    SectionPath, SectionType, Setting, SettingName, SettingPath, Value, ValueType,
 };

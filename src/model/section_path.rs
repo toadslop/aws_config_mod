@@ -5,6 +5,10 @@ use super::{SectionName, SectionType};
 use crate::lexer::{to_owned_input, Parsable};
 use nom::{bytes::complete::tag, combinator::eof};
 
+// TODO: need to get rid of SectionPath and just have a generic path that makes no assumptions
+// about what each part means. Whatever you give it to makes those decisions and then returns
+// errors as necessary
+
 /// Represents the path to a specific [crate::Section] in a config file.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SectionPath {

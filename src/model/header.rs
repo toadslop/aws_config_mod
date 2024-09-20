@@ -16,7 +16,7 @@ use std::fmt::Display;
 
 /// A header of a config section. Contains the section type as well as the profile.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default, Hash)]
-pub struct Header {
+pub struct ConfigHeader {
     /// The name of the section. For example, in the heading [profile A], 'A' is the name.
     pub(crate) section_name: Option<SectionName>,
 
@@ -27,7 +27,7 @@ pub struct Header {
     pub(crate) whitespace: Whitespace,
 }
 
-impl Header {
+impl ConfigHeader {
     /// Provided a [SectionType] and optional [SectionName], creates a new section [Header].
     pub fn new(section_type: SectionType, section_name: Option<SectionName>) -> Self {
         Self {
@@ -38,13 +38,13 @@ impl Header {
     }
 }
 
-impl From<SectionPath> for Header {
+impl From<SectionPath> for ConfigHeader {
     fn from(value: SectionPath) -> Self {
         Self::new(value.section_type, value.section_name)
     }
 }
 
-impl Display for Header {
+impl Display for ConfigHeader {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if let Some(profile) = &self.section_name {
             write!(f, "[{} {}]{}", self.section_type, profile, self.whitespace)
@@ -54,7 +54,7 @@ impl Display for Header {
     }
 }
 
-impl<'a> Parsable<'a> for Header {
+impl<'a> Parsable<'a> for ConfigHeader {
     type Output = Self;
 
     fn parse(input: &'a str) -> ParserOutput<'a, Self::Output> {
@@ -75,6 +75,63 @@ impl<'a> Parsable<'a> for Header {
         let header = Self {
             section_name,
             section_type,
+            whitespace,
+        };
+
+        Ok((next, header))
+    }
+}
+
+/// TODO
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default, Hash)]
+pub struct CredentialHeader {
+    /// The name of the profile associated with this section. In a credential file,
+    /// all sections are of type [SectionType::Profile], so only the profile name
+    /// is recorded in the header as an instance of [SectionName]. For example,
+    /// if in the main config file we have [profile A], then the corresponding
+    /// entry in the credentials file is just [A]
+    pub(crate) profile_name: SectionName,
+
+    /// Any whitespace or comment which follows the header
+    pub(crate) whitespace: Whitespace,
+}
+
+impl CredentialHeader {
+    /// Crate a new [CredentialHeader] with the provided
+    pub fn new(profile_name: SectionName) -> Self {
+        Self {
+            profile_name,
+            whitespace: Whitespace::default(),
+        }
+    }
+
+    /// A credential header is always of [SectionType::Profile], so this function always returns that.
+    pub fn get_type(&self) -> &SectionType {
+        &SectionType::Profile
+    }
+
+    /// Get the name the profile that this section of the credentials file is associated with.
+    pub fn get_name(&self) -> &SectionName {
+        &self.profile_name
+    }
+}
+
+impl Display for CredentialHeader {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[{}]", self.profile_name)
+    }
+}
+
+impl<'a> Parsable<'a> for CredentialHeader {
+    type Output = Self;
+
+    fn parse(input: &'a str) -> ParserOutput<'a, Self::Output> {
+        let (next, profile_name) = delimited(tag("["), SectionName::parse, tag("]"))(input)?;
+
+        let (next, whitespace) = Whitespace::parse(next)?;
+
+        let header = Self {
+            profile_name,
             whitespace,
         };
 
