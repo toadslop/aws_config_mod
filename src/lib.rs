@@ -50,6 +50,7 @@
 //! - detect and match formatting
 //! - set formatting
 //! - utilize aws types
+//! - add more strongly typed structs for various aspects of the configuration
 
 mod error;
 mod lexer;
