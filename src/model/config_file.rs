@@ -15,10 +15,9 @@ use nom::{
 };
 use std::{fmt::Display, str::FromStr};
 
-/// Represents a complete aws config file. Note that this struct can also be use to successfully parse a
-/// credentials file, but you won't have credentials-file-specific type safety. At the moment this is the only choice,
-/// but in the future a credentials-file specific struct will be available that will prevent setting settings,
-/// such as nested settings or other settings that are not found in a credentials file.
+/// Represents a complete aws config file. Note that this struct is not intended for use with a
+/// credentials file although it can still successfully parse one. To handle credential files specifically,
+/// use [crate::AwsCredentialsFile].
 #[derive(Debug, PartialEq, Eq, Clone, Hash, Default)]
 pub struct AwsConfigFile {
     /// Whitespace and comments at the head of the file, before the first section
