@@ -36,6 +36,15 @@ impl ConfigHeader {
             whitespace: Default::default(),
         }
     }
+
+    /// Indicates whether this header belongs to the default profile
+    pub fn is_default_profile(&self) -> bool {
+        self.section_name
+            .as_ref()
+            .map(|inner| *inner == *"default")
+            .unwrap_or_default()
+            && self.section_type == SectionType::Profile
+    }
 }
 
 impl From<SectionPath> for ConfigHeader {
@@ -46,8 +55,16 @@ impl From<SectionPath> for ConfigHeader {
 
 impl Display for ConfigHeader {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if let Some(profile) = &self.section_name {
-            write!(f, "[{} {}]{}", self.section_type, profile, self.whitespace)
+        if let Some(section_name) = &self.section_name {
+            if self.is_default_profile() {
+                write!(f, "[{}]{}", section_name, self.whitespace)
+            } else {
+                write!(
+                    f,
+                    "[{} {}]{}",
+                    self.section_type, section_name, self.whitespace
+                )
+            }
         } else {
             write!(f, "[{}]{}", self.section_type, self.whitespace)
         }
@@ -61,6 +78,9 @@ impl<'a> Parsable<'a> for ConfigHeader {
         let (next, (section_name, section_type)) = delimited(
             tag("["),
             alt((
+                map(tag("default"), |default: &str| {
+                    (Some(SectionName(default.to_string())), SectionType::Profile)
+                }),
                 map(
                     separated_pair(SectionType::parse, tag(" "), SectionName::parse),
                     |(section_type, section_name)| (Some(section_name), section_type),

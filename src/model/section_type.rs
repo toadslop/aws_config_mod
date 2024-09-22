@@ -8,10 +8,7 @@ use std::fmt::Display;
 /// encountered, rather than failing it's value is collected under [SectionType::Other]
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default, Hash)]
 pub enum SectionType {
-    /// The default section type, referring to the default profile
     #[default]
-    Default,
-
     /// A section which contains a profile definition
     Profile,
 
@@ -34,7 +31,6 @@ pub enum SectionType {
 impl PartialEq<str> for SectionType {
     fn eq(&self, other: &str) -> bool {
         match self {
-            SectionType::Default => Self::DEFAULT == other,
             SectionType::Profile => Self::PROFILE == other,
             SectionType::SsoSession => Self::SSO_SESSION == other,
             SectionType::Services => Self::SERVICES == other,
@@ -48,7 +44,6 @@ impl PartialEq<str> for SectionType {
 impl PartialEq<SectionType> for str {
     fn eq(&self, other: &SectionType) -> bool {
         match other {
-            SectionType::Default => SectionType::DEFAULT == self,
             SectionType::Profile => SectionType::PROFILE == self,
             SectionType::SsoSession => SectionType::SSO_SESSION == self,
             SectionType::Services => SectionType::SERVICES == self,
@@ -62,9 +57,6 @@ impl PartialEq<SectionType> for str {
 impl SectionType {
     /// The string represenation of the profile section type
     const PROFILE: &'static str = "profile";
-
-    /// The string represenation of the default section type
-    const DEFAULT: &'static str = "default";
 
     /// The string represenation of the sso-session section type
     const SSO_SESSION: &'static str = "sso-session";
@@ -83,7 +75,6 @@ impl Display for SectionType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let as_str = match self {
             SectionType::Profile => Self::PROFILE,
-            SectionType::Default => Self::DEFAULT,
             SectionType::SsoSession => Self::SSO_SESSION,
             SectionType::Services => Self::SERVICES,
             SectionType::Plugins => Self::PLUGINS,
@@ -101,7 +92,6 @@ impl<'a> Parsable<'a> for SectionType {
     fn parse(input: &'a str) -> ParserOutput<'a, Self::Output> {
         alt((
             map(tag(Self::PROFILE), |_| Self::Profile),
-            map(tag(Self::DEFAULT), |_| Self::Default),
             map(tag(Self::SSO_SESSION), |_| Self::SsoSession),
             map(tag(Self::SERVICES), |_| Self::Services),
             map(tag(Self::PLUGINS), |_| Self::Plugins),

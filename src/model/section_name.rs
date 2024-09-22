@@ -13,7 +13,7 @@ use std::{fmt::Display, ops::Deref, str::FromStr};
 /// Represents the custom profile name associated with a section. In other words, if we see
 /// [profile dev], then 'dev' is the profile name
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Default, Hash)]
-pub struct SectionName(String);
+pub struct SectionName(pub(crate) String);
 
 impl PartialEq<str> for SectionName {
     fn eq(&self, other: &str) -> bool {

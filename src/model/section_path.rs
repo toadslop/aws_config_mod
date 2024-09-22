@@ -61,7 +61,7 @@ impl TryFrom<SectionType> for SectionPath {
 
     fn try_from(section_type: SectionType) -> Result<Self, Self::Error> {
         let section_path = match section_type {
-            SectionType::Default | SectionType::Preview | SectionType::Plugins => SectionPath {
+            SectionType::Preview | SectionType::Plugins => SectionPath {
                 section_type,
                 section_name: None,
             },
@@ -93,16 +93,14 @@ impl From<(SectionType, SectionName)> for SectionPath {
 impl<'a> Parsable<'a> for SectionPath {
     type Output = Self;
 
+    // TODO: fix this to handle default profile correctly
     fn parse(input: &'a str) -> crate::lexer::ParserOutput<'a, Self::Output> {
         let (next, section_type) = SectionType::parse(input)?;
         let (next, _) = tag(".")(next)?;
-        let (next, section_name) = if let SectionType::Default = section_type {
-            (next, None)
-        } else {
-            let (next, setting_name) = SectionName::parse(next)?;
 
-            (next, Some(setting_name))
-        };
+        let (next, section_name) = SectionName::parse(next)?;
+
+        let section_name = Some(section_name);
 
         let config_path = Self {
             section_type,
