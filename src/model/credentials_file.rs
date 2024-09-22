@@ -32,6 +32,7 @@ impl AwsCredentialsFile {
         }
     }
 
+    // TODO: rename 'get section'. Add a strongly typed struct for CredentialProfile and use 'get_profile' for that
     /// Get an immutable reference to the credentials for a given profile
     pub fn get_profile(&self, profile_name: SectionName) -> Option<&Section<CredentialHeader>> {
         self.profiles

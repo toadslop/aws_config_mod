@@ -1,8 +1,8 @@
 //! Items related to how '=' signs are parsed and stringified. This type is internal and
 //! should not be exposed directly to end users.
 
-use crate::lexer::{Parsable, ParserOutput};
-use nom::{bytes::complete::tag, character::complete::space0};
+use crate::lexer::{equal, Parsable, ParserOutput};
+use nom::{character::complete::space0, combinator::recognize, Parser};
 use std::{fmt::Display, ops::Deref};
 
 /// Represents an equal sign and it's surrounding whitespace.
@@ -46,10 +46,9 @@ impl<'a> Parsable<'a> for Equal {
     type Output = Self;
 
     fn parse(input: &'a str) -> ParserOutput<'a, Self::Output> {
-        let (next, leading_ws) = space0(input)?;
-        let (next, eq) = tag("=")(next)?;
-        let (next, trailing_ws) = space0(next)?;
-        let equal = &input[0..(leading_ws.len() + eq.len() + trailing_ws.len())];
-        Ok((next, Self(equal.to_string())))
+        recognize(space0.and(equal).and(space0))
+            .map(str::to_string)
+            .map(Self)
+            .parse(input)
     }
 }

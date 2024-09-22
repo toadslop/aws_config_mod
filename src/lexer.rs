@@ -24,6 +24,11 @@ pub(crate) fn newline(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
     tag("\n")(input)
 }
 
+/// Matches a single newline character
+pub(crate) fn equal(input: &str) -> IResult<&str, &str, VerboseError<&str>> {
+    tag("=")(input)
+}
+
 /// A helper to convert [nom::Err<VerboseError<&str>>] to an owned type
 pub(crate) fn to_owned_input(
     error: nom::Err<VerboseError<&str>>,
