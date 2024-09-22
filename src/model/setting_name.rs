@@ -1,12 +1,12 @@
 //! Contains items related to parsing and stringifying setting names. Setting names are the
 //! identifiers for the setting values in a configuration file.
 
-use crate::lexer::{Parsable, ParserOutput};
+use crate::lexer::{to_owned_input, Parsable, ParserOutput};
 use nom::{
     branch::alt, bytes::complete::tag, character::complete::alphanumeric1, combinator::recognize,
     multi::many0_count,
 };
-use std::{fmt::Display, ops::Deref};
+use std::{fmt::Display, ops::Deref, str::FromStr};
 
 /// Represents the name of a setting; in other words, the part that comes before the '=' sign.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone)]
@@ -35,6 +35,17 @@ impl Deref for SettingName {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl FromStr for SettingName {
+    type Err = crate::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::parse(s)
+            .map(|a| a.1)
+            .map_err(to_owned_input)
+            .map_err(crate::Error::from)
     }
 }
 

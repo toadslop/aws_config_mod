@@ -1,11 +1,14 @@
+//! Handles parsing, reading, and updating values of aws credntials files.
+
+use super::SectionName;
 use super::{header::CredentialHeader, whitespace::Whitespace, Section};
-use super::{SectionName, SectionPath};
 use crate::lexer::{to_owned_input, Parsable};
 use nom::Parser;
 use nom::{combinator::eof, multi::many0, sequence::tuple};
 use std::str::FromStr;
 
-/// TODO
+/// Represents and aws credentials file. A credentials file contains sensitive authentication information
+/// separately from the main configuration file.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub struct AwsCredentialsFile {
     /// Whitespace and comments at the head of the file, before the first section
@@ -20,7 +23,7 @@ pub struct AwsCredentialsFile {
 }
 
 impl AwsCredentialsFile {
-    /// TODO:
+    /// Initialize an empty credentials file
     pub fn new() -> Self {
         Self {
             leading_whitespace: Whitespace::default(),
@@ -29,13 +32,21 @@ impl AwsCredentialsFile {
         }
     }
 
-    /// TODO
-    pub fn get_profile(&self, profile_name: SectionPath) -> &Section<CredentialHeader> {
+    /// Get an immutable reference to the credentials for a given profile
+    pub fn get_profile(&self, profile_name: SectionName) -> Option<&Section<CredentialHeader>> {
         self.profiles
             .iter()
-            .find(|profile| *profile.get_name().0 == profile_name.section_name);
+            .find(|profile| *profile.get_name() == profile_name)
+    }
 
-        todo!()
+    /// Get a mutable reference to the credentials for a given profile
+    pub fn get_profile_mut(
+        &mut self,
+        profile_name: SectionName,
+    ) -> Option<&mut Section<CredentialHeader>> {
+        self.profiles
+            .iter_mut()
+            .find(|profile| *profile.get_name() == profile_name)
     }
 }
 

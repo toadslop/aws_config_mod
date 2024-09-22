@@ -41,8 +41,10 @@ let stringified = config.to_string();
 
 ### TODOs
 
-- support for credentials files
 - improved error messages
 - automatic config file loading via standard aws config locations and environment variables
+- detect and match formatting
+- set formatting
+- utilize aws types
 
 License: MIT OR Apache-2.0

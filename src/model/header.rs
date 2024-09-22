@@ -82,7 +82,9 @@ impl<'a> Parsable<'a> for ConfigHeader {
     }
 }
 
-/// TODO
+/// Represents the header of a [crate::Section] in a credentials file. In a credentials file,
+/// headers never have a second value -- they just contain a profile name and are implicitly of
+/// [crate::SectionType::Profile].
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Default, Hash)]
 pub struct CredentialHeader {
     /// The name of the profile associated with this section. In a credential file,

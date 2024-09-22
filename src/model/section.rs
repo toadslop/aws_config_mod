@@ -31,7 +31,7 @@ pub struct Section<T> {
 
 impl<T> Section<T>
 where
-    for<'a> T: Parsable<'a> + Default,
+    T: Default,
 {
     /// Create a new section, without any settings.
     pub fn new(header: T) -> Self {
@@ -57,6 +57,21 @@ where
         self.settings
             .iter()
             .find(|setting| setting.name() == setting_name)
+    }
+
+    /// Get an immutable reference to the value pointed to by a given [SettingName],
+    /// if it exists. Note that because values can be nested, this returns an enum,
+    /// [ValueType] which contains a single value or the list of nested values.
+    pub fn get_value(&self, setting_name: &SettingName) -> Option<&ValueType> {
+        self.get_setting(setting_name)
+            .map(|setting| setting.value())
+    }
+
+    /// Update the value attached to a given setting name.
+    pub fn set_value(&mut self, setting_name: &SettingName, value: ValueType) {
+        if let Some(setting) = self.get_setting_mut(setting_name) {
+            setting.value = value
+        }
     }
 
     /// Retrieve a mutable reference to a [Setting] by its [SettingName], if it exists

@@ -1,6 +1,6 @@
 use aws_config_mod::{
-    AwsConfigFile, AwsCredentialsFile, SectionName, SectionPath, SectionType, SettingPath, Value,
-    ValueType,
+    AwsConfigFile, AwsCredentialsFile, SectionName, SectionPath, SectionType, SettingName,
+    SettingPath, Value, ValueType,
 };
 
 const SAMPLE_FILE: &str = r#"
@@ -160,29 +160,6 @@ fn can_get_a_value_from_path_tuple() {
     assert_eq!(value, "Ec2InstanceMetadata")
 }
 
-// #[test]
-// fn can_get_a_value_from_path_tuple_section_type() {
-//     let config = AwsConfigFile::parse(SAMPLE_FILE).expect("Sample file should be valid");
-//     let setting_path = SettingPath::try_from((SectionType::Profile, "A", "credential_source"))
-//         .expect("Should parse");
-
-//     let setting = config
-//         .get_setting(setting_path)
-//         .expect("should have the setting");
-
-//     assert_eq!(**setting.name(), "credential_source");
-
-//     let value = match setting.value() {
-//         ValueType::Single(value) => value,
-//         ValueType::Nested(_) => panic!("Should not be nested"),
-//     };
-
-//     assert_eq!(**value, "Ec2InstanceMetadata")
-// }
-
-// TODO: nested path from string
-// TODO: values from tuples
-
 #[test]
 fn can_change_a_value() {
     const EXPECTED: &str = r#"
@@ -242,6 +219,45 @@ fn can_parse_a_credential_file() {
     let config = SAMPLE_CRED_FILE
         .parse::<AwsCredentialsFile>()
         .expect("Should be valid");
-    let section_path = SectionPath::<SectionName>::try_from("profile.A").expect("Should parse");
-    config.get_profile(section_path);
+    let section_name = "default".parse::<SectionName>().expect("Should be valid");
+    let default_profile = config
+        .get_profile(section_name)
+        .expect("Should have found it");
+
+    let aws_access_key_id = "aws_access_key_id"
+        .parse::<SettingName>()
+        .expect("Should be valid");
+    let value = default_profile
+        .get_value(&aws_access_key_id)
+        .expect("Should be present");
+
+    let value = match value {
+        ValueType::Single(value) => value,
+        ValueType::Nested(_) => panic!("Should not be nested"),
+    };
+
+    assert_eq!(value, "AKIAIOSFODNN7EXAMPLE");
+}
+
+#[test]
+fn update_a_credential_file() {
+    let mut config = SAMPLE_CRED_FILE
+        .parse::<AwsCredentialsFile>()
+        .expect("Should be valid");
+    let section_name = "default".parse::<SectionName>().expect("Should be valid");
+    let default_profile = config
+        .get_profile_mut(section_name)
+        .expect("Should have found it");
+
+    let aws_access_key_id = "aws_access_key_id"
+        .parse::<SettingName>()
+        .expect("Should be valid");
+
+    default_profile.set_value(&aws_access_key_id, ValueType::Single(Value::from("hi")));
+
+    let setting = default_profile
+        .get_value(&aws_access_key_id)
+        .expect("Should exist");
+
+    assert_eq!(*setting, ValueType::Single(Value::from("hi")))
 }

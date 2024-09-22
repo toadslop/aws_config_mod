@@ -26,7 +26,7 @@ impl Display for ValueType {
                 nested_settings,
             }) => write!(
                 f,
-                "{leading_whitespace}{}", // TODO: need to capture the actual newline characters
+                "{leading_whitespace}{}",
                 nested_settings
                     .iter()
                     .map(NestedSetting::to_string)

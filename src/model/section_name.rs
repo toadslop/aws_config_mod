@@ -3,12 +3,12 @@
 //! that is the section name. If two items are contained within the square brackets, the second item is
 //! the section name and the first is the section type.
 
-use crate::lexer::{Parsable, ParserOutput};
+use crate::lexer::{to_owned_input, Parsable, ParserOutput};
 use nom::{
     branch::alt, bytes::complete::tag, character::complete::alphanumeric1, combinator::recognize,
     multi::many1_count,
 };
-use std::{fmt::Display, ops::Deref};
+use std::{fmt::Display, ops::Deref, str::FromStr};
 
 /// Represents the custom profile name associated with a section. In other words, if we see
 /// [profile dev], then 'dev' is the profile name
@@ -38,6 +38,17 @@ impl Deref for SectionName {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl FromStr for SectionName {
+    type Err = crate::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::parse(s)
+            .map(|a| a.1)
+            .map_err(to_owned_input)
+            .map_err(crate::Error::from)
     }
 }
 
