@@ -1,10 +1,12 @@
 [package]
 name = "aws_config_mod"
-description = "Read and modify AWS configuration files while preserving existing whitespace and comments"
-authors = ["Brian Heise"]
 version = "0.2.0"
+authors = ["Brian Heise"]
 edition = "2021"
+description = "Read and modify AWS configuration files while preserving existing whitespace and comments"
+documentation = "https://docs.rs/aws_config_mod/latest/aws_config_mod/"
 readme = "README.md"
+repository = "https://github.com/toadslop/aws_config_mod"
 license = "MIT OR Apache-2.0"
 keywords = ["aws", "config", "sdk"]
 
