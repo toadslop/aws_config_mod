@@ -5,6 +5,7 @@ use super::{
     SectionName, SectionPath, SectionType, Setting, SettingPath, Value,
 };
 use crate::lexer::{to_owned_input, Parsable};
+use nom::combinator::map;
 use nom::Parser;
 use nom::{
     combinator::{eof, opt},
@@ -48,6 +49,8 @@ impl AwsConfigFile {
         self.to_string()
     }
 
+    // TODO: remove SectionPath as the input. Just accept the section type and optional section name
+    // consider making an inner type, GetSectionInput and implement 'Into' for various types
     /// Given a [SectionPath], will find and return the [Section] if it exists; otherwise returns [None].
     pub fn get_section(&self, config_path: &SectionPath) -> Option<&Section<ConfigHeader>> {
         let SectionPath {
@@ -58,6 +61,8 @@ impl AwsConfigFile {
         self.get_section_inner(section_type, section_name.as_ref())
     }
 
+    // TODO: remove this. retrive a section first and get the setting from there. Otherwise, have a more generic
+    // get method that accepts a path and can go any level of deep, and return an enum for either Section, Setting, or NestedSetting
     /// Given a [SettingPath], locate the given [Setting], if it exists.
     pub fn get_setting(&self, setting_path: &SettingPath) -> Option<&Setting> {
         let SettingPath {
@@ -70,6 +75,7 @@ impl AwsConfigFile {
         section.get_setting(setting_name)
     }
 
+    // TODO: remove this, do the same as the above
     /// Retrieves a [NestedSetting], or a setting contained within another setting, given the [NestedSettingPath]
     /// if it exists.
     pub fn get_nested_setting(&self, setting_path: &NestedSettingPath) -> Option<&NestedSetting> {
@@ -83,6 +89,7 @@ impl AwsConfigFile {
         section.get_nested_setting(setting_name, nested_setting_name)
     }
 
+    // TODO: replace SettingPath with a more generic path
     /// Provided a [SettingPath] and a [Value], locates the desired [Setting] and changes its [Value].
     /// If the setting doesn't exist, it will be created. If the [Section] that contains the [Setting]
     /// doesn't exist, it will also be created.
@@ -173,21 +180,35 @@ impl<'a> Parsable<'a> for AwsConfigFile {
     type Output = Self;
 
     fn parse(input: &'a str) -> IResult<&'a str, Self::Output, VerboseError<&'a str>> {
-        let (next, ((leading_whitespace, sections, trailing_whitespace), _)) = tuple((
-            Whitespace::parse,
-            opt(many0(Section::<ConfigHeader>::parse)),
-            Whitespace::parse,
-        ))
-        .and(eof)
-        .parse(input)?;
+        map(
+            map(
+                tuple((
+                    Whitespace::parse,
+                    opt(many0(Section::<ConfigHeader>::parse)),
+                    Whitespace::parse,
+                )),
+                Self::from,
+            )
+            .and(eof),
+            |(config, _)| config,
+        )
+        .parse(input)
+    }
+}
 
-        let config_file = Self {
+impl From<(Whitespace, Option<Vec<Section<ConfigHeader>>>, Whitespace)> for AwsConfigFile {
+    fn from(
+        (leading_whitespace, sections, trailing_whitespace): (
+            Whitespace,
+            Option<Vec<Section<ConfigHeader>>>,
+            Whitespace,
+        ),
+    ) -> Self {
+        Self {
             leading_whitespace,
             sections: sections.unwrap_or_default(),
             trailing_whitespace,
-        };
-
-        Ok((next, config_file))
+        }
     }
 }
 
