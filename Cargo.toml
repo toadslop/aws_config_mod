@@ -1,6 +1,6 @@
 [package]
 name = "aws_config_mod"
-version = "0.2.1"
+version = "0.3.0"
 authors = ["Brian Heise"]
 edition = "2021"
 description = "Read and modify AWS configuration files while preserving existing whitespace and comments"
