@@ -20,6 +20,9 @@
 //! ## Usage
 //!
 //! ```
+//! use aws_config_mod::{AwsConfigFile, SettingPath, Value};
+//! use std::str::FromStr;
+//! 
 //! // Assuming you already read the configuration file to a string
 //! let config_content = r#"
 //! [profile A]
@@ -35,7 +38,7 @@
 //! ec2 =
 //!   endpoint_url = https://profile-b-ec2-endpoint.aws"#;
 //!
-//! let mut config = AwsConfigFile::parse(SAMPLE_FILE).expect("Sample file should be valid");
+//! let mut config = AwsConfigFile::from_str(config_content).expect("Sample file should be valid");
 //!
 //! let setting_path = SettingPath::try_from("profile.A.credential_source").expect("Should parse");
 //! config.set(setting_path, Value::from("my-new-credential-source"));

@@ -5,6 +5,7 @@ use super::{header::CredentialHeader, whitespace::Whitespace, Section};
 use crate::lexer::{to_owned_input, Parsable};
 use nom::Parser;
 use nom::{combinator::eof, multi::many0, sequence::tuple};
+use std::fmt::Display;
 use std::str::FromStr;
 
 /// Represents and aws credentials file. A credentials file contains sensitive authentication information
@@ -48,6 +49,43 @@ impl AwsCredentialsFile {
         self.profiles
             .iter_mut()
             .find(|profile| *profile.get_name() == profile_name)
+    }
+
+    /// Check if the given [Section] exists from a [SectionPath]
+    pub(crate) fn contains_profile(&self, profile_name: &SectionName) -> bool {
+        self.profiles.iter().any(|section| section.get_name() == profile_name)
+    }
+
+    /// Given a [SectionName], create the [Section] if it doesn't exist and return a mutable
+    /// reference to it.
+    pub fn insert_profile(
+        &mut self,
+        profile_name: SectionName,
+    ) -> &mut Section<CredentialHeader> {
+        if !self.contains_profile(&profile_name) {
+            let new_profile: Section<CredentialHeader> =
+                Section::new(CredentialHeader::new(profile_name.clone()));
+            self.profiles.push(new_profile);
+        }
+
+        #[allow(clippy::unwrap_used)]
+        // This cannot fail because we just added the item if it didn't exist
+        self.get_profile_mut(profile_name).unwrap()
+    }
+}
+
+impl Display for AwsCredentialsFile {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}{}{}",
+            self.leading_whitespace,
+            self.profiles
+                .iter()
+                .map(Section::to_string)
+                .collect::<String>(),
+            self.trailing_whitespace
+        )
     }
 }
 

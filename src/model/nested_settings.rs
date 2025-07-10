@@ -5,9 +5,9 @@ use crate::lexer::Parsable;
 use nom::{combinator::map, multi::many0, Parser};
 use std::{fmt::Display, ops::Deref};
 
-/// Given the configuration file excert below:
+/// Given the configuration file excerpt below:
 ///
-/// ```
+/// ```ignore
 /// [profile test]
 /// region = us-west-2
 /// s3 =

@@ -37,6 +37,7 @@ where
     pub fn new(header: T) -> Self {
         Self {
             header,
+            trailing_whitespace: Whitespace::newline(),
             ..Default::default()
         }
     }

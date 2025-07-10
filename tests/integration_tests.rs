@@ -261,3 +261,64 @@ fn update_a_credential_file() {
 
     assert_eq!(*setting, ValueType::Single(Value::from("hi")))
 }
+
+#[test]
+fn update_settings_in_a_credential_file() {
+    const EXPECTED: &str = r#"
+[default]
+aws_access_key_id=hi
+aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+aws_session_token=IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZVERYLONGSTRINGEXAMPLE
+
+[other]
+aws_access_key_id=AKIAIOSFODNN7EXAMPLE
+aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+aws_session_token=IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZVERYLONGSTRINGEXAMPLE
+"#;
+
+    let mut config = SAMPLE_CRED_FILE
+        .parse::<AwsCredentialsFile>()
+        .expect("Should be valid");
+
+    let profile = config
+        .get_profile_mut("default".parse().expect("Should be valid"))
+        .expect("Should have found the default profile");
+    profile.set_value(&"aws_access_key_id".parse().expect("Should be valid"), ValueType::Single(Value::from("hi")));
+
+    let stringified = config.to_string();
+    assert_eq!(stringified, EXPECTED)
+}
+
+#[test]
+fn add_settings_in_a_credential_file() {
+    const EXPECTED: &str = r#"
+[default]
+aws_access_key_id=AKIAIOSFODNN7EXAMPLE
+aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+aws_session_token=IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZVERYLONGSTRINGEXAMPLE
+
+[other]
+aws_access_key_id=AKIAIOSFODNN7EXAMPLE
+aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+aws_session_token=IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZ2luX2IQoJb3JpZVERYLONGSTRINGEXAMPLE
+[extra]
+aws_access_key_id = hi
+[another]
+aws_access_key_id = hi
+"#;
+
+    let mut config = SAMPLE_CRED_FILE
+        .parse::<AwsCredentialsFile>()
+        .expect("Should be valid");
+
+    let extra_profile = config
+        .insert_profile("extra".parse().expect("Should be valid"));
+    extra_profile.set("aws_access_key_id".parse().expect("Should be valid"), Value::from("hi"));
+    let another_profile = config
+        .insert_profile("another".parse().expect("Should be valid"));
+    another_profile.set("aws_access_key_id".parse().expect("Should be valid"), Value::from("hi"));
+
+    // Write the content back to your file
+    let stringified = config.to_string();
+    assert_eq!(stringified, EXPECTED)
+}
